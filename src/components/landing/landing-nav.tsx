@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { ShoppingBasket } from "lucide-react";
 import Link from "next/link";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function LandingNav() {
   return (
@@ -40,7 +41,8 @@ export function LandingNav() {
             ))}
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
             <Link
               href="/auth?mode=signin"
               className="text-xs text-muted hover:text-foreground transition-colors px-4 py-2 font-medium"

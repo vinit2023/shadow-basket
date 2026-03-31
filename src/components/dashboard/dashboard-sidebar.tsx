@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { LayoutList, AlertTriangle, Tag, ShoppingBasket, LogOut, Settings, Brain, Leaf, LineChart } from "lucide-react";
 import Link from "next/link";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const tabs: { id: Tab; label: string; icon: React.ElementType; color: string }[] = [
   { id: "ledger", label: "Smart Ledger", icon: LayoutList, color: "text-accent" },
@@ -53,6 +54,10 @@ export function DashboardSidebar({ activeTab, onTabChange }: Props) {
       </nav>
 
       <div className="p-2.5 space-y-0.5 border-t border-card-border">
+        <div className="flex items-center justify-between px-3 py-2">
+          <span className="text-[11px] text-muted font-mono font-bold tracking-wider">THEME</span>
+          <ThemeToggle />
+        </div>
         <button className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] text-muted hover:text-foreground hover:bg-white/5 transition-all font-medium"><Settings className="w-4 h-4" /><span>Settings</span></button>
         <Link href="/" className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] text-muted hover:text-danger hover:bg-danger/5 transition-all font-medium"><LogOut className="w-4 h-4" /><span>Sign Out</span></Link>
       </div>
