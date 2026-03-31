@@ -5,7 +5,9 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { LayoutList, AlertTriangle, Tag, ShoppingBasket, LogOut, Settings, Brain, Leaf, LineChart } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { signOut } from "@/lib/supabase";
 
 const tabs: { id: Tab; label: string; icon: React.ElementType; color: string }[] = [
   { id: "ledger", label: "Smart Ledger", icon: LayoutList, color: "text-accent" },
@@ -22,6 +24,13 @@ interface Props {
 }
 
 export function DashboardSidebar({ activeTab, onTabChange }: Props) {
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    await signOut();
+    router.push("/auth?mode=signin");
+  };
+
   return (
     <aside className="w-60 border-r border-card-border bg-card flex flex-col">
       <div className="p-5 border-b border-card-border">
@@ -59,7 +68,7 @@ export function DashboardSidebar({ activeTab, onTabChange }: Props) {
           <ThemeToggle />
         </div>
         <button className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] text-muted hover:text-foreground hover:bg-white/5 transition-all font-medium"><Settings className="w-4 h-4" /><span>Settings</span></button>
-        <Link href="/" className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] text-muted hover:text-danger hover:bg-danger/5 transition-all font-medium"><LogOut className="w-4 h-4" /><span>Sign Out</span></Link>
+        <button onClick={handleSignOut} className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] text-muted hover:text-danger hover:bg-danger/5 transition-all font-medium"><LogOut className="w-4 h-4" /><span>Sign Out</span></button>
       </div>
 
       <div className="px-4 py-3 border-t border-card-border">

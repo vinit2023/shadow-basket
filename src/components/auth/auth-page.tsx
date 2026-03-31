@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShoppingBasket, Mail, Lock, User, ArrowRight, Eye, EyeOff, Globe, TerminalSquare } from "lucide-react";
+import { ShoppingBasket, Mail, Lock, User, ArrowRight, Eye, EyeOff, Globe, TerminalSquare, AlertCircle } from "lucide-react";
 import Link from "next/link";
+import { signUp, signIn } from "@/lib/supabase";
 
 export function AuthPage() {
   const searchParams = useSearchParams();
@@ -16,13 +17,31 @@ export function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1500));
+
+    if (mode === "signup") {
+      const { error: signUpError } = await signUp(email, password, name);
+      if (signUpError) {
+        setError(signUpError.message);
+        setLoading(false);
+        return;
+      }
+      router.push("/onboarding");
+    } else {
+      const { error: signInError } = await signIn(email, password);
+      if (signInError) {
+        setError(signInError.message);
+        setLoading(false);
+        return;
+      }
+      router.push("/dashboard");
+    }
     setLoading(false);
-    router.push("/onboarding");
   };
 
   return (
@@ -97,6 +116,12 @@ export function AuthPage() {
 
             <AnimatePresence mode="wait">
               <motion.form key={mode} initial={{ opacity: 0, x: mode === "signup" ? 20 : -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: mode === "signup" ? -20 : 20 }} transition={{ duration: 0.3 }} onSubmit={handleSubmit} className="space-y-4">
+                {error && (
+                  <motion.div initial={{ opacity: 0, y: -5 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2 p-3 rounded-xl bg-danger/10 border border-danger/20 text-danger text-xs font-medium">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    {error}
+                  </motion.div>
+                )}
                 {mode === "signup" && (
                   <div>
                     <label className="text-[11px] font-mono text-muted tracking-wider block mb-2 font-bold">FULL NAME</label>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { DashboardSidebar } from "@/components/dashboard/dashboard-sidebar";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 import { LedgerView } from "@/components/dashboard/ledger-view";
@@ -13,22 +14,36 @@ import { AddItemModal } from "@/components/dashboard/add-item-modal";
 import { PhotoUploadModal } from "@/components/dashboard/photo-upload-modal";
 import { MOCK_ITEMS } from "@/lib/mock-data";
 import { InventoryItem } from "@/lib/types";
-import { supabase } from "@/lib/supabase";
+import { supabase, getUser } from "@/lib/supabase";
 import { motion } from "framer-motion";
 
 export type Tab = "ledger" | "restock" | "deals" | "meals" | "waste" | "insights";
 
 export default function Dashboard() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>("ledger");
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showPhotoModal, setShowPhotoModal] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    getUser().then((user) => {
+      if (!user) {
+        router.push("/auth?mode=signin");
+        return;
+      }
+      setUserId(user.id);
+    });
+  }, [router]);
 
   const fetchItems = useCallback(async () => {
+    if (!userId) return;
     const { data, error } = await supabase
       .from("items")
       .select("*")
+      .eq("user_id", userId)
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -38,16 +53,16 @@ export default function Dashboard() {
       setItems(data as InventoryItem[]);
     }
     setLoading(false);
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
-    fetchItems();
-  }, [fetchItems]);
+    if (userId) fetchItems();
+  }, [userId, fetchItems]);
 
   const handleAddItem = async (item: Omit<InventoryItem, "id" | "created_at">) => {
     const { data, error } = await supabase
       .from("items")
-      .insert([item])
+      .insert([{ ...item, user_id: userId }])
       .select()
       .single();
 
@@ -61,9 +76,10 @@ export default function Dashboard() {
   };
 
   const handlePhotoItems = async (newItems: Omit<InventoryItem, "id" | "created_at">[]) => {
+    const withUserId = newItems.map((item) => ({ ...item, user_id: userId }));
     const { data, error } = await supabase
       .from("items")
-      .insert(newItems)
+      .insert(withUserId)
       .select();
 
     if (error) {
