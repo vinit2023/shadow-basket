@@ -3,43 +3,63 @@
 import { useState, useRef } from "react";
 import { InventoryItem } from "@/lib/types";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Upload, Camera, Loader2, CheckCircle2, Sparkles } from "lucide-react";
+import { X, Upload, Camera, Loader2, CheckCircle2, Sparkles, AlertCircle } from "lucide-react";
 
 interface Props {
   onClose: () => void;
   onItemsDetected: (items: Omit<InventoryItem, "id" | "created_at">[]) => void;
 }
 
-type UploadState = "idle" | "uploading" | "analyzing" | "done";
-
-function simulateLLMAnalysis(): Omit<InventoryItem, "id" | "created_at">[] {
-  return [
-    { name: "Oat Milk", category: "Dairy", unit_type: "bottles", current_stock_level: 2, max_stock_level: 3, daily_burn_rate: 0.3, last_restock_date: new Date().toISOString() },
-    { name: "Peanut Butter", category: "Condiments", unit_type: "oz", current_stock_level: 16, max_stock_level: 16, daily_burn_rate: 0.4, last_restock_date: new Date().toISOString() },
-    { name: "Canned Tomatoes", category: "Other", unit_type: "cans", current_stock_level: 4, max_stock_level: 6, daily_burn_rate: 0.5, last_restock_date: new Date().toISOString() },
-    { name: "Pasta (Penne)", category: "Grains", unit_type: "boxes", current_stock_level: 3, max_stock_level: 4, daily_burn_rate: 0.3, last_restock_date: new Date().toISOString() },
-    { name: "Olive Oil", category: "Condiments", unit_type: "bottles", current_stock_level: 1, max_stock_level: 1, daily_burn_rate: 0.05, last_restock_date: new Date().toISOString() },
-  ];
-}
+type UploadState = "idle" | "uploading" | "analyzing" | "done" | "error";
 
 export function PhotoUploadModal({ onClose, onItemsDetected }: Props) {
   const [state, setState] = useState<UploadState>("idle");
   const [, setPreview] = useState<string | null>(null);
   const [detectedItems, setDetectedItems] = useState<Omit<InventoryItem, "id" | "created_at">[]>([]);
+  const [errorMsg, setErrorMsg] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
     const reader = new FileReader();
     reader.onload = (ev) => setPreview(ev.target?.result as string);
     reader.readAsDataURL(file);
+
     setState("uploading");
-    await new Promise((r) => setTimeout(r, 1200));
-    setState("analyzing");
-    await new Promise((r) => setTimeout(r, 2000));
-    setDetectedItems(simulateLLMAnalysis());
-    setState("done");
+
+    try {
+      // Convert file to base64
+      const base64 = await new Promise<string>((resolve) => {
+        const r = new FileReader();
+        r.onload = () => {
+          const result = r.result as string;
+          resolve(result.split(",")[1]);
+        };
+        r.readAsDataURL(file);
+      });
+
+      setState("analyzing");
+
+      const response = await fetch("/api/analyze-photo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: base64, mimeType: file.type }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || data.error) {
+        throw new Error(data.error || "Analysis failed");
+      }
+
+      setDetectedItems(data.items);
+      setState("done");
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : "Failed to analyze image");
+      setState("error");
+    }
   };
 
   return (
@@ -112,6 +132,15 @@ export function PhotoUploadModal({ onClose, onItemsDetected }: Props) {
                     </>
                   )}
                 </div>
+              </div>
+            )}
+
+            {state === "error" && (
+              <div className="flex flex-col items-center py-12">
+                <AlertCircle className="w-10 h-10 text-danger mb-4" />
+                <p className="text-sm font-medium text-danger">Analysis Failed</p>
+                <p className="text-xs text-muted mt-1">{errorMsg}</p>
+                <button onClick={() => { setState("idle"); setErrorMsg(""); }} className="mt-4 px-4 py-2 text-xs font-medium bg-accent/10 border border-accent/20 rounded-lg text-accent">Try Again</button>
               </div>
             )}
 

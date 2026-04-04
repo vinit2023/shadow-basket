@@ -1,48 +1,61 @@
 "use client";
 
 import { InventoryItem } from "@/lib/types";
-import { estimatedRemainingPercent } from "@/lib/inventory";
+import { estimatedRemainingPercent, daysUntilEmpty } from "@/lib/inventory";
 import { motion } from "framer-motion";
-import { Tag, TrendingDown, ExternalLink, Zap } from "lucide-react";
+import { Tag, TrendingDown, Zap, ShoppingCart } from "lucide-react";
 
 interface Props {
   items: InventoryItem[];
 }
 
-interface MockDeal {
+interface DealSuggestion {
   itemName: string;
-  store: string;
-  originalPrice: string;
-  salePrice: string;
-  discount: number;
-  expiresIn: string;
+  category: string;
+  pctRemaining: number;
+  daysLeft: number;
+  priority: "urgent" | "soon" | "plan";
+  suggestion: string;
 }
 
-function generateMockDeals(items: InventoryItem[]): MockDeal[] {
-  const lowItems = items.filter((i) => estimatedRemainingPercent(i) <= 40);
-  const stores = ["Whole Foods", "Trader Joe's", "Costco", "Target", "Safeway"];
-  const expirations = ["2h", "6h", "12h", "1d", "2d"];
+function generateDealSuggestions(items: InventoryItem[]): DealSuggestion[] {
+  return items
+    .map((item) => {
+      const pct = estimatedRemainingPercent(item);
+      const days = daysUntilEmpty(item);
+      let priority: "urgent" | "soon" | "plan";
+      let suggestion: string;
 
-  return lowItems.map((item, i) => {
-    const originalPrice = (Math.random() * 8 + 2).toFixed(2);
-    const discount = Math.floor(Math.random() * 30) + 10;
-    const salePrice = (
-      (parseFloat(originalPrice) * (100 - discount)) /
-      100
-    ).toFixed(2);
-    return {
-      itemName: item.name,
-      store: stores[i % stores.length],
-      originalPrice,
-      salePrice,
-      discount,
-      expiresIn: expirations[i % expirations.length],
-    };
-  });
+      if (days <= 1) {
+        priority = "urgent";
+        suggestion = "Buy today — stock depleted or depleting within 24h";
+      } else if (days <= 3) {
+        priority = "urgent";
+        suggestion = `Only ${days} days left — restock this week`;
+      } else if (days <= 7) {
+        priority = "soon";
+        suggestion = `${days} days remaining — add to next shopping list`;
+      } else {
+        priority = "plan";
+        suggestion = `${days} days left — plan ahead for bulk deals`;
+      }
+
+      return {
+        itemName: item.name,
+        category: item.category,
+        pctRemaining: pct,
+        daysLeft: days,
+        priority,
+        suggestion,
+      };
+    })
+    .filter((d) => d.daysLeft <= 10)
+    .sort((a, b) => a.daysLeft - b.daysLeft);
 }
 
 export function DealsView({ items }: Props) {
-  const deals = generateMockDeals(items);
+  const deals = generateDealSuggestions(items);
+  const urgentCount = deals.filter((d) => d.priority === "urgent").length;
 
   return (
     <div className="space-y-6">
@@ -54,16 +67,16 @@ export function DealsView({ items }: Props) {
       >
         <Zap className="w-4 h-4 text-accent" />
         <p className="text-sm text-accent">
-          <span className="font-semibold">{deals.length} price drops</span>{" "}
-          detected for items you&apos;re running low on
+          <span className="font-semibold">{deals.length} items</span>{" "}
+          need restocking — {urgentCount} urgent
         </p>
       </motion.div>
 
-      {/* Deals grid */}
+      {/* Shopping list */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {deals.length === 0 ? (
           <p className="text-sm text-muted col-span-full py-12 text-center">
-            No deals available. All items are well-stocked.
+            All items are well-stocked. No shopping needed right now.
           </p>
         ) : (
           deals.map((deal, idx) => (
@@ -78,19 +91,27 @@ export function DealsView({ items }: Props) {
           ))
         )}
       </div>
-
-      <p className="text-[10px] text-muted/30 font-mono text-center pt-4">
-        SIMULATED DATA // PRICE INTELLIGENCE MODULE v0.1
-      </p>
     </div>
   );
 }
 
-function DealCard({ deal }: { deal: MockDeal }) {
+function DealCard({ deal }: { deal: DealSuggestion }) {
+  const borderColor = deal.priority === "urgent"
+    ? "border-danger/30 hover:border-danger/50"
+    : deal.priority === "soon"
+    ? "border-warning/30 hover:border-warning/50"
+    : "border-card-border hover:border-accent/20";
+
+  const priorityBadge = deal.priority === "urgent"
+    ? { text: "URGENT", color: "bg-danger/10 border-danger/20 text-danger" }
+    : deal.priority === "soon"
+    ? { text: "SOON", color: "bg-warning/10 border-warning/20 text-warning" }
+    : { text: "PLAN", color: "bg-accent/10 border-accent/20 text-accent" };
+
   return (
     <motion.div
       whileHover={{ scale: 1.01, y: -2 }}
-      className="border border-card-border rounded-xl bg-card p-4 hover:border-accent/20 transition-all group cursor-default"
+      className={`border rounded-xl bg-card p-4 transition-all group cursor-default ${borderColor}`}
     >
       <div className="flex items-start justify-between">
         <div className="flex-1">
@@ -99,32 +120,37 @@ function DealCard({ deal }: { deal: MockDeal }) {
           </p>
           <p className="text-[11px] text-muted font-mono mt-0.5 flex items-center gap-1">
             <Tag className="w-3 h-3" />
-            {deal.store}
+            {deal.category}
           </p>
         </div>
-        <span className="px-2 py-0.5 bg-success/10 border border-success/20 text-success text-[11px] font-mono rounded-md">
-          -{deal.discount}%
+        <span className={`px-2 py-0.5 border text-[11px] font-mono rounded-md ${priorityBadge.color}`}>
+          {priorityBadge.text}
         </span>
       </div>
 
       <div className="mt-4 flex items-end justify-between">
-        <div className="flex items-baseline gap-2">
-          <span className="text-xl font-mono font-semibold text-foreground">
-            ${deal.salePrice}
-          </span>
-          <span className="text-sm font-mono text-muted line-through">
-            ${deal.originalPrice}
-          </span>
+        <div>
+          <div className="flex items-baseline gap-2">
+            <span className={`text-xl font-mono font-semibold ${deal.daysLeft <= 1 ? "text-danger" : deal.daysLeft <= 3 ? "text-warning" : "text-foreground"}`}>
+              {deal.daysLeft === 0 ? "NOW" : `${deal.daysLeft}d`}
+            </span>
+            <span className="text-xs text-muted">remaining</span>
+          </div>
+          <div className="mt-1 w-20 h-1 bg-white/5 rounded-full overflow-hidden">
+            <div className={`h-full rounded-full ${deal.pctRemaining <= 15 ? "bg-danger" : deal.pctRemaining <= 40 ? "bg-warning" : "bg-success"}`} style={{ width: `${deal.pctRemaining}%` }} />
+          </div>
         </div>
         <div className="flex items-center gap-1 text-[10px] font-mono text-muted">
           <TrendingDown className="w-3 h-3 text-danger" />
-          Expires {deal.expiresIn}
+          {deal.pctRemaining}% left
         </div>
       </div>
 
+      <p className="mt-3 text-[11px] text-muted font-medium">{deal.suggestion}</p>
+
       <button className="mt-3 w-full flex items-center justify-center gap-2 py-2 text-xs font-medium bg-white/5 border border-card-border rounded-lg text-muted hover:text-accent hover:border-accent/30 transition-all">
-        <ExternalLink className="w-3 h-3" />
-        View Deal
+        <ShoppingCart className="w-3 h-3" />
+        Add to Shopping List
       </button>
     </motion.div>
   );

@@ -96,7 +96,7 @@ export default function Dashboard() {
     <div className="flex h-screen overflow-hidden">
       <DashboardSidebar activeTab={activeTab} onTabChange={setActiveTab} />
       <main className="flex-1 flex flex-col overflow-hidden">
-        <DashboardHeader activeTab={activeTab} itemCount={items.length} onAddItem={() => setShowAddModal(true)} onPhotoUpload={() => setShowPhotoModal(true)} />
+        <DashboardHeader activeTab={activeTab} itemCount={items.length} onAddItem={() => setShowAddModal(true)} onPhotoUpload={() => setShowPhotoModal(true)} items={items} />
         <motion.div key={activeTab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="flex-1 overflow-auto p-6">
           {loading ? (
             <div className="flex items-center justify-center h-full">

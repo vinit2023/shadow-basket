@@ -1,11 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingBasket, Mail, Lock, User, ArrowRight, Eye, EyeOff, Globe, TerminalSquare, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { signUp, signIn } from "@/lib/supabase";
+import { Turnstile } from "@marsidev/react-turnstile";
+
+const testimonials = [
+  { quote: "Shadow Basket cut our grocery waste by 60% and saves us $50/month. The AI meal planner alone is worth it.", name: "Sarah P.", role: "Family of 5, Portland", initials: "SP" },
+  { quote: "I never thought a grocery app could feel this premium. The burn rate predictions are scary accurate.", name: "Marcus T.", role: "Software Engineer, Austin", initials: "MT" },
+  { quote: "We reduced our food waste from 30% to under 8%. The waste analytics dashboard is a game-changer.", name: "Priya K.", role: "Restaurant Owner, NYC", initials: "PK" },
+  { quote: "The photo scanning feature is magic. I just snap my pantry and everything gets tracked instantly.", name: "James L.", role: "Home Cook, Seattle", initials: "JL" },
+  { quote: "Best investment for our household. The spending insights helped us cut our grocery bill by 35%.", name: "Elena R.", role: "Budget Coach, Miami", initials: "ER" },
+  { quote: "The predictive alerts saved us multiple times from running out of essentials. Truly intelligent.", name: "David W.", role: "Father of 3, Chicago", initials: "DW" },
+];
 
 export function AuthPage() {
   const searchParams = useSearchParams();
@@ -18,10 +28,27 @@ export function AuthPage() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [error, setError] = useState("");
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [testimonialIdx, setTestimonialIdx] = useState(0);
+
+  const nextTestimonial = useCallback(() => {
+    setTestimonialIdx((prev) => (prev + 1) % testimonials.length);
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(nextTestimonial, 4000);
+    return () => clearInterval(timer);
+  }, [nextTestimonial]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (!captchaToken) {
+      setError("Please complete the CAPTCHA verification.");
+      return;
+    }
+
     setLoading(true);
 
     if (mode === "signup") {
@@ -73,16 +100,32 @@ export function AuthPage() {
             AI-powered inventory tracking, predictive analytics, waste reduction, and intelligent deal-finding. All in one beautiful dashboard.
           </p>
 
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="mt-12 p-5 rounded-2xl border border-white/[0.06] bg-white/[0.02]">
-            <p className="text-sm text-muted leading-relaxed italic">&ldquo;Shadow Basket cut our grocery waste by 60% and saves us $50/month. The AI meal planner alone is worth it.&rdquo;</p>
-            <div className="mt-4 flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-accent/30 to-accent-2/30 flex items-center justify-center text-xs font-black">SP</div>
-              <div>
-                <p className="text-xs font-bold">Sarah P.</p>
-                <p className="text-[10px] text-muted">Family of 5, Portland</p>
-              </div>
+          <div className="mt-12 relative h-[160px]">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={testimonialIdx}
+                initial={{ opacity: 0, x: 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -30 }}
+                transition={{ duration: 0.35 }}
+                className="absolute inset-0 p-5 rounded-2xl border border-white/[0.06] bg-white/[0.02]"
+              >
+                <p className="text-sm text-muted leading-relaxed italic">&ldquo;{testimonials[testimonialIdx].quote}&rdquo;</p>
+                <div className="mt-4 flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-accent/30 to-accent-2/30 flex items-center justify-center text-xs font-black">{testimonials[testimonialIdx].initials}</div>
+                  <div>
+                    <p className="text-xs font-bold">{testimonials[testimonialIdx].name}</p>
+                    <p className="text-[10px] text-muted">{testimonials[testimonialIdx].role}</p>
+                  </div>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+            <div className="absolute -bottom-5 left-0 flex gap-1.5">
+              {testimonials.map((_, i) => (
+                <div key={i} className={`h-1 rounded-full transition-all ${i === testimonialIdx ? "w-5 bg-accent" : "w-1.5 bg-white/10"}`} />
+              ))}
             </div>
-          </motion.div>
+          </div>
 
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }} className="mt-8 flex gap-8">
             {[{ val: "12K+", label: "Households" }, { val: "60%", label: "Less waste" }, { val: "4.9", label: "Rating" }].map((s) => (
@@ -148,7 +191,16 @@ export function AuthPage() {
                     </button>
                   </div>
                 </div>
-                <button type="submit" disabled={loading} className="w-full mt-2 flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold transition-all disabled:opacity-50 overflow-hidden relative">
+                <div className="flex justify-center pt-1">
+                  <Turnstile
+                    siteKey="1x00000000000000000000AA"
+                    onSuccess={(token) => setCaptchaToken(token)}
+                    onError={() => setCaptchaToken(null)}
+                    onExpire={() => setCaptchaToken(null)}
+                    options={{ theme: "dark", size: "normal" }}
+                  />
+                </div>
+                <button type="submit" disabled={loading || !captchaToken} className="w-full mt-2 flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold transition-all disabled:opacity-50 overflow-hidden relative">
                   <motion.div className="absolute inset-0 bg-gradient-to-r from-accent via-accent-2 to-accent" animate={{ backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"] }} transition={{ duration: 5, repeat: Infinity }} style={{ backgroundSize: "200% 200%" }} />
                   {loading ? (
                     <div className="relative z-10 w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

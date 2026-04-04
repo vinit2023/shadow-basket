@@ -6,6 +6,9 @@ import {
   burnRateLabel,
   statusColor,
   statusBgColor,
+  healthScore,
+  healthScoreLabel,
+  healthScoreColor,
 } from "@/lib/inventory";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
@@ -131,6 +134,9 @@ export function LedgerView({ items }: Props) {
                 </span>
               </th>
               <th className="text-left px-4 py-3 text-[11px] font-mono text-muted tracking-wider">
+                HEALTH
+              </th>
+              <th className="text-left px-4 py-3 text-[11px] font-mono text-muted tracking-wider">
                 STATUS
               </th>
             </tr>
@@ -194,6 +200,11 @@ export function LedgerView({ items }: Props) {
                   </td>
                   <td className="px-4 py-3">
                     <BurnIndicator rate={item.daily_burn_rate} />
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={cn("text-sm font-mono font-black", healthScoreColor(healthScore(item)))}>
+                      {healthScoreLabel(healthScore(item))}
+                    </span>
                   </td>
                   <td className="px-4 py-3">
                     <span

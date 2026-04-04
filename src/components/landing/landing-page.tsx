@@ -9,6 +9,7 @@ import { DemoSection } from "./demo-section";
 import { CTASection } from "./cta-section";
 import { LandingNav } from "./landing-nav";
 import { FooterSection } from "./footer-section";
+import { TestimonialsSection } from "./testimonials-section";
 
 export function LandingPage() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -25,6 +26,7 @@ export function LandingPage() {
       <HeroSection />
       <FeaturesSection />
       <DemoSection />
+      <TestimonialsSection />
       <CTASection />
       <FooterSection />
     </div>
