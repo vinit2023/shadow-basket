@@ -4,11 +4,11 @@
 
 /* ===== DARK MODE (default) ===== */
 :root, .dark {
-  --background: #030306;
-  --foreground: #f0f0f5;
-  --card: #08080d;
-  --card-border: #13132a;
-  --muted: #6b6b80;
+  --background: #0a0a12;
+  --foreground: #ebebf5;
+  --card: #12121e;
+  --card-border: #1e1e3a;
+  --muted: #8888a0;
   --accent: #00e5ff;
   --accent-2: #7c3aed;
   --accent-3: #f43f5e;
