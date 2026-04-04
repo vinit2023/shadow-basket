@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingBasket, Mail, Lock, User, ArrowRight, Eye, EyeOff, Globe, TerminalSquare, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { signUp, signIn } from "@/lib/supabase";
-import { Turnstile } from "@marsidev/react-turnstile";
+import ReCAPTCHA from "react-google-recaptcha";
 
 const testimonials = [
   { quote: "Shadow Basket cut our grocery waste by 60% and saves us $50/month. The AI meal planner alone is worth it.", name: "Sarah P.", role: "Family of 5, Portland", initials: "SP" },
@@ -192,12 +192,12 @@ export function AuthPage() {
                   </div>
                 </div>
                 <div className="flex justify-center pt-1">
-                  <Turnstile
-                    siteKey="1x00000000000000000000AA"
-                    onSuccess={(token) => setCaptchaToken(token)}
-                    onError={() => setCaptchaToken(null)}
-                    onExpire={() => setCaptchaToken(null)}
-                    options={{ theme: "dark", size: "normal" }}
+                  <ReCAPTCHA
+                    sitekey="6LcHGqcsAAAAAG7K9ynCQzijc2V9hUZkzn1g-X5C"
+                    onChange={(token) => setCaptchaToken(token)}
+                    onExpired={() => setCaptchaToken(null)}
+                    onErrored={() => setCaptchaToken(null)}
+                    theme="dark"
                   />
                 </div>
                 <button type="submit" disabled={loading || !captchaToken} className="w-full mt-2 flex items-center justify-center gap-2 py-3.5 rounded-xl text-sm font-bold transition-all disabled:opacity-50 overflow-hidden relative">
