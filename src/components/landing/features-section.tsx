@@ -2,9 +2,9 @@
 
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { useRef, useState } from "react";
-import { LayoutList, Camera, AlertTriangle, Tag, Brain, LineChart, Leaf, Users, ArrowRight } from "lucide-react";
+import { LayoutList, Camera, AlertTriangle, Tag, Brain, LineChart, Leaf, Users, ArrowRight, Mic } from "lucide-react";
 
-const features = [
+const features: { icon: typeof LayoutList; title: string; description: string; color: string; iconColor: string; borderHover: string; detail: string; gradient: string; premium?: boolean }[] = [
   {
     icon: LayoutList, title: "Smart Ledger", description: "Real-time inventory with AI-calculated burn rates, depletion curves, and stock health scoring.",
     color: "from-accent/20 to-accent/5", iconColor: "text-accent", borderHover: "hover:border-accent/30",
@@ -48,6 +48,13 @@ const features = [
     gradient: "from-blue/10 via-transparent to-transparent",
   },
   {
+    icon: Mic, title: "Voice Commands", description: "Say \"Hey Shadow\" and control your kitchen hands-free. Add, restock, delete items — just by speaking.",
+    color: "from-cyan-400/20 to-cyan-400/5", iconColor: "text-cyan-400", borderHover: "hover:border-cyan-400/30",
+    detail: "Powered by AI intent parsing. Say \"Hey Shadow, add milk\" or \"Hey Shadow, I'm out of eggs\" — it understands natural language and executes instantly. Text-to-speech confirms every action.",
+    gradient: "from-cyan-400/10 via-transparent to-transparent",
+    premium: true,
+  },
+  {
     icon: Users, title: "Household Sync", description: "Multi-user support. Everyone sees the same inventory. No more duplicate purchases.",
     color: "from-purple/20 to-purple/5", iconColor: "text-purple", borderHover: "hover:border-purple/30",
     detail: "Sign in with Google, GitHub, or email. All household members share the same real-time inventory view.",
@@ -77,7 +84,7 @@ export function FeaturesSection() {
             className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-accent/20 bg-accent/5 text-[11px] font-mono text-accent tracking-[0.2em] uppercase font-bold mb-6"
           >
             <div className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
-            8 MODULES
+            9 MODULES
           </motion.span>
           <h2 className="mt-5 text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[0.95]">
             Not just tracking.
@@ -125,6 +132,15 @@ export function FeaturesSection() {
                       <p className={`text-sm font-bold transition-colors ${isActive ? "text-foreground" : "text-muted"}`}>{feature.title}</p>
                       <p className="text-[11px] text-muted/70 truncate">{feature.description.split(".")[0]}.</p>
                     </div>
+                    {feature.premium && (
+                      <motion.span
+                        animate={{ opacity: [0.7, 1, 0.7] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                        className="px-1.5 py-0.5 rounded text-[8px] font-black tracking-wider bg-cyan-400/20 text-cyan-400 border border-cyan-400/30"
+                      >
+                        NEW
+                      </motion.span>
+                    )}
                     {isActive && (
                       <motion.div initial={{ opacity: 0, x: -5 }} animate={{ opacity: 1, x: 0 }}>
                         <ArrowRight className={`w-4 h-4 ${feature.iconColor}`} />

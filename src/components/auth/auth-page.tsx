@@ -243,7 +243,16 @@ export function AuthPage() {
               </button>
             </div>
 
-            <p className="mt-6 text-center text-[10px] text-muted/40">By continuing, you agree to our Terms and Privacy Policy.</p>
+            <div className="mt-6 flex items-center justify-center gap-4 text-[10px]">
+              <Link href="/" className="text-muted/50 hover:text-accent transition-colors font-medium">Home</Link>
+              <span className="text-muted/20">·</span>
+              <Link href="/#features" className="text-muted/50 hover:text-accent transition-colors font-medium">Features</Link>
+              <span className="text-muted/20">·</span>
+              <Link href="/#how-it-works" className="text-muted/50 hover:text-accent transition-colors font-medium">How it works</Link>
+              <span className="text-muted/20">·</span>
+              <Link href="/#pricing" className="text-muted/50 hover:text-accent transition-colors font-medium">Pricing</Link>
+            </div>
+            <p className="mt-3 text-center text-[10px] text-muted/40">By continuing, you agree to our Terms and Privacy Policy.</p>
           </div>
         </motion.div>
       </div>

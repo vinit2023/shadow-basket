@@ -1,7 +1,7 @@
 "use client";
 
-import { motion, useMotionValue, useTransform, useInView } from "framer-motion";
-import { ArrowRight, ShoppingBasket, Sparkles, Zap, Play } from "lucide-react";
+import { motion, useMotionValue, useTransform, useInView, AnimatePresence } from "framer-motion";
+import { ArrowRight, ShoppingBasket, Sparkles, Zap, Play, Mic } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
 
@@ -81,6 +81,40 @@ function Counter({ target, suffix = "", prefix = "" }: { target: string; suffix?
   return <span ref={ref}>{isInView ? display : `${prefix}0${suffix}`}</span>;
 }
 
+const voiceExamples = [
+  '"Hey Shadow, add milk"',
+  '"Hey Shadow, I\'m out of eggs"',
+  '"Hey Shadow, restock the rice"',
+  '"Hey Shadow, delete yogurt"',
+  '"Hey Shadow, how much bread do I have?"',
+];
+
+function VoiceExampleCycler() {
+  const [idx, setIdx] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setIdx((prev) => (prev + 1) % voiceExamples.length);
+    }, 3000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <AnimatePresence mode="wait">
+      <motion.span
+        key={idx}
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -8 }}
+        transition={{ duration: 0.3 }}
+        className="text-xs text-cyan-400 font-mono font-medium"
+      >
+        {voiceExamples[idx]}
+      </motion.span>
+    </AnimatePresence>
+  );
+}
+
 export function HeroSection() {
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
@@ -152,12 +186,30 @@ export function HeroSection() {
           <span className="text-accent font-semibold">Eliminate waste.</span>
         </motion.p>
 
+        {/* Voice Command Floating Examples */}
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.8 }}
+          className="mt-10 flex items-center justify-center"
+        >
+          <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl border border-cyan-400/20 bg-cyan-400/[0.04] backdrop-blur-sm">
+            <motion.div
+              animate={{ scale: [1, 1.2, 1] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            >
+              <Mic className="w-4 h-4 text-cyan-400" />
+            </motion.div>
+            <VoiceExampleCycler />
+          </div>
+        </motion.div>
+
         {/* CTA Buttons */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.9 }}
-          className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4"
+          className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4"
         >
           <Link href="/auth?mode=signup" className="group relative inline-flex items-center gap-2 px-8 py-4 rounded-2xl text-sm font-bold overflow-hidden shadow-lg shadow-accent/20 hover:shadow-accent/30 transition-shadow">
             <motion.div

@@ -27,6 +27,35 @@ interface Props {
 
 type ListenState = "idle" | "listening" | "processing" | "success" | "error";
 
+const tooltipExamples = [
+  '"Hey Shadow, add milk"',
+  '"Hey Shadow, I\'m out of eggs"',
+  '"Hey Shadow, restock rice"',
+  '"Hey Shadow, delete yogurt"',
+];
+
+function VoiceExampleTooltip() {
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    const timer = setInterval(() => setIdx((p) => (p + 1) % tooltipExamples.length), 2500);
+    return () => clearInterval(timer);
+  }, []);
+  return (
+    <AnimatePresence mode="wait">
+      <motion.p
+        key={idx}
+        initial={{ opacity: 0, y: 4 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -4 }}
+        transition={{ duration: 0.2 }}
+        className="text-[10px] text-muted font-mono"
+      >
+        {tooltipExamples[idx]}
+      </motion.p>
+    </AnimatePresence>
+  );
+}
+
 export function VoiceCommand({ items, userId, onItemsChange }: Props) {
   const [state, setState] = useState<ListenState>("idle");
   const [isOpen, setIsOpen] = useState(false);
@@ -299,14 +328,15 @@ export function VoiceCommand({ items, userId, onItemsChange }: Props) {
           )}
         </div>
 
-        {/* Idle tooltip */}
+        {/* Idle tooltip with cycling examples */}
         {state === "idle" && (
           <motion.div
             initial={{ opacity: 0, x: 10 }}
             animate={{ opacity: 1, x: 0 }}
-            className="absolute right-full mr-3 top-1/2 -translate-y-1/2 whitespace-nowrap px-3 py-2 rounded-xl bg-card border border-card-border text-xs font-medium text-muted shadow-lg"
+            className="absolute right-full mr-3 top-1/2 -translate-y-1/2 whitespace-nowrap px-3 py-2.5 rounded-xl bg-card border border-card-border shadow-lg"
           >
-            <span className="text-accent font-bold">Hey Shadow</span> — voice commands
+            <p className="text-[10px] text-accent font-bold mb-1">Hey Shadow</p>
+            <VoiceExampleTooltip />
           </motion.div>
         )}
       </motion.button>
@@ -415,13 +445,17 @@ export function VoiceCommand({ items, userId, onItemsChange }: Props) {
                   </motion.div>
                 )}
 
-                {state === "idle" && !isOpen && (
-                  <p className="text-xs text-muted text-center">Tap the microphone to start voice commands</p>
+                {state === "idle" && (
+                  <div className="text-center">
+                    <Mic className="w-8 h-8 text-muted/30 mx-auto mb-3" />
+                    <p className="text-xs text-muted">Tap the microphone or say <span className="text-accent font-bold">&quot;Hey Shadow&quot;</span></p>
+                    <p className="text-[10px] text-muted/50 mt-1">followed by your command</p>
+                  </div>
                 )}
               </div>
 
               {/* Examples */}
-              {state === "listening" && (
+              {(state === "listening" || state === "idle") && (
                 <div className="px-5 pb-4">
                   <p className="text-[9px] font-mono text-muted tracking-wider font-bold mb-2">TRY SAYING</p>
                   <div className="space-y-1.5">
