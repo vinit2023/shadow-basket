@@ -1,10 +1,10 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import Groq from "groq-sdk";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
-  const apiKey = process.env.GEMINI_API_KEY || process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+  const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
-    return NextResponse.json({ error: "Gemini API key not configured" }, { status: 500 });
+    return NextResponse.json({ error: "API key not configured" }, { status: 500 });
   }
 
   try {
@@ -17,12 +17,17 @@ export async function POST(req: NextRequest) {
       `${i.name} (${i.current_stock_level} ${i.unit_type}, ${i.category})`
     ).join("\n");
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-
-    const result = await model.generateContent([
-      {
-        text: `You are a chef AI. Given these available ingredients in my kitchen:
+    const groq = new Groq({ apiKey });
+    const completion = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [
+        {
+          role: "system",
+          content: "You are a chef AI. Return ONLY valid JSON, no markdown, no explanation.",
+        },
+        {
+          role: "user",
+          content: `Given these available ingredients in my kitchen:
 
 ${itemList}
 
@@ -36,11 +41,14 @@ Return a JSON array with these fields:
 - wasteReduction: string (brief note on how this reduces waste, e.g. "Uses spinach before it wilts")
 - difficulty: string ("Easy", "Medium", or "Hard")
 
-Return ONLY the JSON array, no markdown, no explanation.`,
-      },
-    ]);
+Return ONLY the JSON array.`,
+        },
+      ],
+      temperature: 0.7,
+      max_tokens: 1024,
+    });
 
-    const text = result.response.text();
+    const text = completion.choices[0]?.message?.content || "";
     const cleaned = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
     const meals = JSON.parse(cleaned);
 
