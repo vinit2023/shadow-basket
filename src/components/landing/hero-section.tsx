@@ -167,7 +167,7 @@ export function HeroSection() {
           <span className="block text-foreground">Your kitchen.</span>
           <span className="block mt-2">
             <TypewriterText
-              texts={["Quantified.", "Predicted.", "Optimized.", "Automated."]}
+              texts={["Quantified.", "Predicted.", "Optimized.", "Voice-controlled."]}
               className="gradient-text-animate"
             />
           </span>
@@ -182,7 +182,7 @@ export function HeroSection() {
         >
           Shadow Basket is the{" "}
           <span className="text-foreground font-semibold">AI-native command center</span> for home inventory.
-          Snap a photo. Track burn rates. Predict restocks.{" "}
+          Snap a photo. Speak a command. Track burn rates.{" "}
           <span className="text-accent font-semibold">Eliminate waste.</span>
         </motion.p>
 
