@@ -27,7 +27,11 @@ export function DashboardSidebar({ activeTab, onTabChange }: Props) {
   const router = useRouter();
 
   const handleSignOut = async () => {
-    await signOut();
+    try {
+      await signOut();
+    } catch (err) {
+      console.error("Sign out failed:", err);
+    }
     router.push("/auth?mode=signin");
   };
 

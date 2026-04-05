@@ -14,7 +14,6 @@ type UploadState = "idle" | "uploading" | "analyzing" | "done" | "error";
 
 export function PhotoUploadModal({ onClose, onItemsDetected }: Props) {
   const [state, setState] = useState<UploadState>("idle");
-  const [, setPreview] = useState<string | null>(null);
   const [detectedItems, setDetectedItems] = useState<Omit<InventoryItem, "id" | "created_at">[]>([]);
   const [errorMsg, setErrorMsg] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -22,10 +21,6 @@ export function PhotoUploadModal({ onClose, onItemsDetected }: Props) {
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (ev) => setPreview(ev.target?.result as string);
-    reader.readAsDataURL(file);
 
     setState("uploading");
 
