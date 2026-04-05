@@ -14,21 +14,43 @@ import { TestimonialsSection } from "./testimonials-section";
 export function LandingPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: containerRef });
-  const opacity = useTransform(scrollYProgress, [0, 0.15], [1, 0]);
+
+  // Parallax effects for the background orbs
+  const orbOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0.3]);
+  const orbScale = useTransform(scrollYProgress, [0, 0.5], [1, 1.3]);
 
   return (
     <div ref={containerRef} className="relative min-h-screen">
       <LandingNav />
       <AnimatedGrid />
-      <motion.div style={{ opacity }} className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-accent/[0.03] blur-[100px]" />
+
+      {/* Top glow — fades as you scroll */}
+      <motion.div style={{ opacity: orbOpacity, scale: orbScale }} className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[600px] rounded-full bg-accent/[0.04] blur-[120px]" />
       </motion.div>
-      <HeroSection />
-      <FeaturesSection />
-      <DemoSection />
-      <TestimonialsSection />
-      <CTASection />
-      <FooterSection />
+
+      {/* Sections with dividers */}
+      <div className="relative z-10">
+        <HeroSection />
+
+        {/* Gradient divider */}
+        <div className="w-full h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+
+        <FeaturesSection />
+
+        <div className="w-full h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+
+        <DemoSection />
+
+        <div className="w-full h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+
+        <TestimonialsSection />
+
+        <div className="w-full h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+
+        <CTASection />
+        <FooterSection />
+      </div>
     </div>
   );
 }

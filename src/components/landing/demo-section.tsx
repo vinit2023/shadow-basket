@@ -2,12 +2,12 @@
 
 import { motion, useInView } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
-import { Camera, Check, ShoppingBasket, Cpu, Eye } from "lucide-react";
+import { Camera, Check, ShoppingBasket, Cpu, Eye, ArrowRight } from "lucide-react";
 
 const scanSteps = [
-  { text: "> Initializing GPT-4o vision pipeline...", delay: 0, type: "system" },
+  { text: "> Initializing Llama 3.2 Vision pipeline...", delay: 0, type: "system" },
   { text: "> Image received (3.2MB) — preprocessing...", delay: 700, type: "system" },
-  { text: "> Running multi-object detection (YOLOv9)...", delay: 1400, type: "system" },
+  { text: "> Running multi-object detection...", delay: 1400, type: "system" },
   { text: "  [DETECTED] Organic Whole Milk — 1 gallon — Dairy", delay: 2000, type: "detect" },
   { text: "  [DETECTED] Free-Range Eggs — 12 count — Protein", delay: 2400, type: "detect" },
   { text: "  [DETECTED] Sourdough Bread — 1 loaf — Grains", delay: 2700, type: "detect" },
@@ -19,10 +19,26 @@ const scanSteps = [
   { text: "> 6 items catalogued. Ledger updated.", delay: 5200, type: "done" },
 ];
 
+const steps = [
+  {
+    step: "01", title: "Snap", desc: "Point your camera at any shelf, fridge, or pantry. One photo is all it takes.",
+    icon: Camera, color: "text-accent", bg: "from-accent/20 to-accent/5", border: "border-accent/20",
+  },
+  {
+    step: "02", title: "AI Analyzes", desc: "Llama 3.2 Vision identifies every item — quantity, category, and freshness.",
+    icon: Eye, color: "text-accent-2", bg: "from-accent-2/20 to-accent-2/5", border: "border-accent-2/20",
+  },
+  {
+    step: "03", title: "Ledger Updates", desc: "Your inventory reflects reality. Burn rates and predictions recalculate instantly.",
+    icon: Cpu, color: "text-success", bg: "from-success/20 to-success/5", border: "border-success/20",
+  },
+];
+
 export function DemoSection() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-80px" });
   const [visibleSteps, setVisibleSteps] = useState<number[]>([]);
+  const [activeStep, setActiveStep] = useState(0);
 
   useEffect(() => {
     if (!isInView) return;
@@ -33,106 +49,152 @@ export function DemoSection() {
     return () => timeouts.forEach(clearTimeout);
   }, [isInView]);
 
+  // Auto-cycle through steps
+  useEffect(() => {
+    if (!isInView) return;
+    const timer = setInterval(() => {
+      setActiveStep((prev) => (prev + 1) % 3);
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [isInView]);
+
   return (
     <section id="how-it-works" ref={ref} className="relative py-32 px-6">
       <div className="max-w-6xl mx-auto">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          transition={{ duration: 0.8 }}
+          className="text-center mb-20"
         >
-          <span className="text-[11px] font-mono text-accent-2 tracking-[0.2em] uppercase font-bold">HOW IT WORKS</span>
-          <h2 className="mt-5 text-4xl sm:text-5xl font-black tracking-tight">
+          <motion.span
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={isInView ? { opacity: 1, scale: 1 } : {}}
+            transition={{ delay: 0.2 }}
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-accent-2/20 bg-accent-2/5 text-[11px] font-mono text-accent-2 tracking-[0.2em] uppercase font-bold mb-6"
+          >
+            <div className="w-1.5 h-1.5 rounded-full bg-accent-2 animate-pulse" />
+            HOW IT WORKS
+          </motion.span>
+          <h2 className="mt-5 text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[0.95]">
             Photo in. <span className="gradient-text">Inventory out.</span>
           </h2>
-          <p className="mt-4 text-muted max-w-md mx-auto font-medium">
+          <p className="mt-6 text-muted max-w-md mx-auto font-medium text-base">
             Three steps. Under two seconds. Zero manual entry.
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-          {/* Steps */}
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="space-y-8"
-          >
-            {[
-              { step: "01", title: "Snap", desc: "Take a photo of any shelf, fridge, or pantry.", icon: Camera, color: "from-accent/20 to-accent/5 text-accent" },
-              { step: "02", title: "AI Analyzes", desc: "GPT-4o vision identifies items, quantities, brands, and freshness.", icon: Eye, color: "from-accent-2/20 to-accent-2/5 text-accent-2" },
-              { step: "03", title: "Ledger Updates", desc: "Your dashboard reflects reality. Burn rates recalculate instantly.", icon: Cpu, color: "from-success/20 to-success/5 text-success" },
-            ].map((s, i) => (
-              <motion.div
-                key={s.step}
-                initial={{ opacity: 0, x: -20 }}
-                animate={isInView ? { opacity: 1, x: 0 } : {}}
-                transition={{ duration: 0.5, delay: 0.4 + i * 0.15 }}
-                whileHover={{ x: 4 }}
-                className="flex gap-5 group cursor-default"
-              >
-                <motion.div
-                  whileHover={{ scale: 1.1, rotate: 5 }}
-                  className={`flex-shrink-0 w-14 h-14 rounded-2xl bg-gradient-to-br ${s.color} flex items-center justify-center`}
-                >
-                  <s.icon className="w-6 h-6" />
-                </motion.div>
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[10px] font-mono text-muted tracking-wider font-bold">STEP {s.step}</span>
-                  </div>
-                  <h3 className="font-bold text-lg">{s.title}</h3>
-                  <p className="text-sm text-muted mt-0.5">{s.desc}</p>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
+        {/* Steps — horizontal with connecting line */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16 relative"
+        >
+          {/* Connecting line */}
+          <div className="hidden md:block absolute top-10 left-[16.67%] right-[16.67%] h-[1px]">
+            <motion.div
+              initial={{ scaleX: 0 }}
+              animate={isInView ? { scaleX: 1 } : {}}
+              transition={{ duration: 1, delay: 0.8 }}
+              className="h-full bg-gradient-to-r from-accent/30 via-accent-2/30 to-success/30 origin-left"
+            />
+          </div>
 
-          {/* Terminal */}
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="relative"
-          >
-            <div className="absolute -inset-6 bg-gradient-to-br from-accent/8 via-accent-2/8 to-accent-3/8 rounded-3xl blur-3xl opacity-50" />
-            <div className="relative rounded-2xl border border-white/[0.08] overflow-hidden glass-strong">
-              <div className="h-10 border-b border-white/5 flex items-center px-4 gap-2">
-                <div className="flex gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-accent-3/60" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-warning/60" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-success/60" />
+          {steps.map((s, i) => (
+            <motion.div
+              key={s.step}
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.5, delay: 0.5 + i * 0.15 }}
+              onMouseEnter={() => setActiveStep(i)}
+              className={`relative p-6 rounded-2xl border transition-all duration-500 cursor-default ${
+                activeStep === i
+                  ? `border-white/[0.1] bg-white/[0.04] shadow-lg`
+                  : "border-white/[0.04] bg-white/[0.01]"
+              }`}
+            >
+              {activeStep === i && (
+                <motion.div
+                  layoutId="step-glow"
+                  className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${s.bg} opacity-30`}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                />
+              )}
+              <div className="relative z-10">
+                <motion.div
+                  animate={activeStep === i ? { scale: [1, 1.1, 1] } : {}}
+                  transition={{ duration: 0.5 }}
+                  className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${s.bg} border ${s.border} flex items-center justify-center mb-5`}
+                >
+                  <s.icon className={`w-6 h-6 ${s.color}`} />
+                </motion.div>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-[10px] font-mono text-muted tracking-wider font-bold">STEP {s.step}</span>
+                  <ArrowRight className="w-3 h-3 text-muted/30" />
                 </div>
-                <span className="ml-3 text-[10px] text-muted font-mono flex items-center gap-1.5 font-medium">
-                  <ShoppingBasket className="w-3 h-3" />
-                  shadow-basket // vision-engine
-                </span>
+                <h3 className="font-bold text-lg mb-1">{s.title}</h3>
+                <p className="text-sm text-muted leading-relaxed">{s.desc}</p>
               </div>
-              <div className="p-5 font-mono text-[11px] space-y-1 min-h-[340px] leading-relaxed">
-                {scanSteps.map((step, i) => (
-                  <motion.div
-                    key={i}
-                    initial={{ opacity: 0, x: -5 }}
-                    animate={visibleSteps.includes(i) ? { opacity: 1, x: 0 } : { opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className={
-                      step.type === "done" ? "text-success font-bold flex items-center gap-1.5 pt-1" :
-                      step.type === "detect" ? "text-accent" :
-                      "text-muted"
-                    }
-                  >
-                    {step.type === "done" && <Check className="w-3.5 h-3.5" />}
-                    {step.text}
-                  </motion.div>
-                ))}
-                {visibleSteps.length < scanSteps.length && (
-                  <motion.span animate={{ opacity: [1, 0] }} transition={{ duration: 0.5, repeat: Infinity }} className="inline-block w-2 h-4 bg-accent" />
-                )}
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* Terminal */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.8, delay: 0.6 }}
+          className="relative max-w-3xl mx-auto"
+        >
+          <motion.div
+            className="absolute -inset-6 rounded-3xl opacity-50"
+            style={{
+              background: "linear-gradient(135deg, rgba(0,229,255,0.08) 0%, rgba(124,58,237,0.08) 50%, rgba(0,214,143,0.06) 100%)",
+              filter: "blur(40px)",
+            }}
+            animate={{ opacity: [0.3, 0.6, 0.3] }}
+            transition={{ duration: 4, repeat: Infinity }}
+          />
+          <div className="relative rounded-2xl border border-white/[0.08] overflow-hidden shadow-2xl shadow-black/30">
+            <div className="h-11 border-b border-white/[0.06] flex items-center px-4 gap-2 bg-white/[0.02] backdrop-blur-xl">
+              <div className="flex gap-2">
+                <div className="w-3 h-3 rounded-full bg-accent-3/60" />
+                <div className="w-3 h-3 rounded-full bg-warning/60" />
+                <div className="w-3 h-3 rounded-full bg-success/60" />
               </div>
+              <span className="ml-3 text-[10px] text-muted font-mono flex items-center gap-1.5 font-medium">
+                <ShoppingBasket className="w-3 h-3" />
+                shadow-basket // vision-engine
+              </span>
             </div>
-          </motion.div>
-        </div>
+            <div className="p-6 font-mono text-[11px] space-y-1.5 min-h-[340px] leading-relaxed bg-card/80">
+              {scanSteps.map((step, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={visibleSteps.includes(i) ? { opacity: 1, x: 0 } : { opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className={
+                    step.type === "done" ? "text-success font-bold flex items-center gap-2 pt-2" :
+                    step.type === "detect" ? "text-accent" :
+                    "text-muted"
+                  }
+                >
+                  {step.type === "done" && <Check className="w-4 h-4" />}
+                  {step.text}
+                </motion.div>
+              ))}
+              {visibleSteps.length < scanSteps.length && (
+                <motion.span
+                  animate={{ opacity: [1, 0] }}
+                  transition={{ duration: 0.5, repeat: Infinity }}
+                  className="inline-block w-2 h-4 bg-accent rounded-sm"
+                />
+              )}
+            </div>
+          </div>
+        </motion.div>
       </div>
     </section>
   );
