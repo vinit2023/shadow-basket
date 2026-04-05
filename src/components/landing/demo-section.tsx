@@ -1,10 +1,10 @@
 "use client";
 
-import { motion, useInView } from "framer-motion";
+import { motion, useInView, AnimatePresence } from "framer-motion";
 import { useRef, useState, useEffect } from "react";
-import { Camera, Check, ShoppingBasket, Cpu, Eye, ArrowRight } from "lucide-react";
+import { Camera, Check, ShoppingBasket, Cpu, Eye, ArrowRight, Mic, Brain } from "lucide-react";
 
-const scanSteps = [
+const photoScanSteps = [
   { text: "> Initializing Llama 3.2 Vision pipeline...", delay: 0, type: "system" },
   { text: "> Image received (3.2MB) — preprocessing...", delay: 700, type: "system" },
   { text: "> Running multi-object detection...", delay: 1400, type: "system" },
@@ -19,7 +19,22 @@ const scanSteps = [
   { text: "> 6 items catalogued. Ledger updated.", delay: 5200, type: "done" },
 ];
 
-const steps = [
+const voiceScanSteps = [
+  { text: "> Wake word detected: \"Hey Shadow\"", delay: 0, type: "system" },
+  { text: "> Listening... capturing audio stream...", delay: 600, type: "system" },
+  { text: "> Transcript: \"add 2 gallons of milk\"", delay: 1200, type: "detect" },
+  { text: "> Sending to Llama 3.3 70B intent parser...", delay: 1800, type: "system" },
+  { text: "  [PARSED] Action: ADD", delay: 2400, type: "detect" },
+  { text: "  [PARSED] Item: Milk", delay: 2700, type: "detect" },
+  { text: "  [PARSED] Quantity: 2 gallons", delay: 3000, type: "detect" },
+  { text: "  [PARSED] Category: Dairy (auto-detected)", delay: 3300, type: "detect" },
+  { text: "  [PARSED] Confidence: 98.2%", delay: 3600, type: "detect" },
+  { text: "> Executing command against inventory...", delay: 4000, type: "system" },
+  { text: "> Speaking response: \"Added 2 gallons of milk\"", delay: 4500, type: "system" },
+  { text: "> Command executed. Ledger updated.", delay: 5200, type: "done" },
+];
+
+const photoSteps = [
   {
     step: "01", title: "Snap", desc: "Point your camera at any shelf, fridge, or pantry. One photo is all it takes.",
     icon: Camera, color: "text-accent", bg: "from-accent/20 to-accent/5", border: "border-accent/20",
@@ -34,29 +49,60 @@ const steps = [
   },
 ];
 
+const voiceSteps = [
+  {
+    step: "01", title: "Speak", desc: "Say \"Hey Shadow\" followed by your command. Add, restock, or delete — hands-free.",
+    icon: Mic, color: "text-cyan-400", bg: "from-cyan-400/20 to-cyan-400/5", border: "border-cyan-400/20",
+  },
+  {
+    step: "02", title: "AI Parses", desc: "Llama 3.3 70B understands natural language and extracts intent, item, and quantity.",
+    icon: Brain, color: "text-accent-2", bg: "from-accent-2/20 to-accent-2/5", border: "border-accent-2/20",
+  },
+  {
+    step: "03", title: "Ledger Updates", desc: "Your inventory updates instantly. Shadow speaks back to confirm the action.",
+    icon: Cpu, color: "text-success", bg: "from-success/20 to-success/5", border: "border-success/20",
+  },
+];
+
 export function DemoSection() {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: "-80px" });
   const [visibleSteps, setVisibleSteps] = useState<number[]>([]);
   const [activeStep, setActiveStep] = useState(0);
+  const [mode, setMode] = useState<"photo" | "voice">("photo");
 
+  const currentScanSteps = mode === "photo" ? photoScanSteps : voiceScanSteps;
+  const currentSteps = mode === "photo" ? photoSteps : voiceSteps;
+
+  // Auto-toggle between photo and voice every 8 seconds
   useEffect(() => {
     if (!isInView) return;
+    const timer = setInterval(() => {
+      setMode((prev) => (prev === "photo" ? "voice" : "photo"));
+    }, 8000);
+    return () => clearInterval(timer);
+  }, [isInView]);
+
+  // Reset terminal animation when mode changes
+  useEffect(() => {
+    if (!isInView) return;
+    setVisibleSteps([]);
+    setActiveStep(0);
     const timeouts: NodeJS.Timeout[] = [];
-    scanSteps.forEach((step, i) => {
+    currentScanSteps.forEach((step, i) => {
       timeouts.push(setTimeout(() => setVisibleSteps((prev) => [...prev, i]), step.delay + 800));
     });
     return () => timeouts.forEach(clearTimeout);
-  }, [isInView]);
+  }, [isInView, mode, currentScanSteps]);
 
-  // Auto-cycle through steps
+  // Auto-cycle through step cards
   useEffect(() => {
     if (!isInView) return;
     const timer = setInterval(() => {
       setActiveStep((prev) => (prev + 1) % 3);
     }, 3000);
     return () => clearInterval(timer);
-  }, [isInView]);
+  }, [isInView, mode]);
 
   return (
     <section id="how-it-works" ref={ref} className="relative py-32 px-6">
@@ -76,12 +122,53 @@ export function DemoSection() {
             <div className="w-1.5 h-1.5 rounded-full bg-accent-2 animate-pulse" />
             HOW IT WORKS
           </motion.span>
+
+          {/* Alternating headline */}
           <h2 className="mt-5 text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[0.95]">
-            Photo in. <span className="gradient-text">Inventory out.</span>
+            <AnimatePresence mode="wait">
+              <motion.span
+                key={mode}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.4 }}
+                className={mode === "photo" ? "text-accent" : "text-cyan-400"}
+              >
+                {mode === "photo" ? "Photo" : "Voice"}
+              </motion.span>
+            </AnimatePresence>
+            {" "}in. <span className="gradient-text">Inventory out.</span>
           </h2>
+
           <p className="mt-6 text-muted max-w-md mx-auto font-medium text-base">
-            Three steps. Under two seconds. Zero manual entry.
+            {mode === "photo"
+              ? "Three steps. Under two seconds. Zero manual entry."
+              : "Just speak. AI understands. Inventory updates."}
           </p>
+
+          {/* Mode toggle pills */}
+          <div className="mt-6 inline-flex items-center gap-1 p-1 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+            <button
+              onClick={() => setMode("photo")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                mode === "photo"
+                  ? "bg-accent/10 text-accent border border-accent/20"
+                  : "text-muted hover:text-foreground border border-transparent"
+              }`}
+            >
+              <Camera className="w-3.5 h-3.5" /> Photo
+            </button>
+            <button
+              onClick={() => setMode("voice")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold transition-all ${
+                mode === "voice"
+                  ? "bg-cyan-400/10 text-cyan-400 border border-cyan-400/20"
+                  : "text-muted hover:text-foreground border border-transparent"
+              }`}
+            >
+              <Mic className="w-3.5 h-3.5" /> Voice
+            </button>
+          </div>
         </motion.div>
 
         {/* Steps — horizontal with connecting line */}
@@ -101,43 +188,46 @@ export function DemoSection() {
             />
           </div>
 
-          {steps.map((s, i) => (
-            <motion.div
-              key={s.step}
-              initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.5, delay: 0.5 + i * 0.15 }}
-              onMouseEnter={() => setActiveStep(i)}
-              className={`relative p-6 rounded-2xl border transition-all duration-500 cursor-default ${
-                activeStep === i
-                  ? `border-white/[0.1] bg-white/[0.04] shadow-lg`
-                  : "border-white/[0.04] bg-white/[0.01]"
-              }`}
-            >
-              {activeStep === i && (
-                <motion.div
-                  layoutId="step-glow"
-                  className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${s.bg} opacity-30`}
-                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                />
-              )}
-              <div className="relative z-10">
-                <motion.div
-                  animate={activeStep === i ? { scale: [1, 1.1, 1] } : {}}
-                  transition={{ duration: 0.5 }}
-                  className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${s.bg} border ${s.border} flex items-center justify-center mb-5`}
-                >
-                  <s.icon className={`w-6 h-6 ${s.color}`} />
-                </motion.div>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-[10px] font-mono text-muted tracking-wider font-bold">STEP {s.step}</span>
-                  <ArrowRight className="w-3 h-3 text-muted/30" />
+          <AnimatePresence mode="wait">
+            {currentSteps.map((s, i) => (
+              <motion.div
+                key={`${mode}-${s.step}`}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.4, delay: i * 0.1 }}
+                onMouseEnter={() => setActiveStep(i)}
+                className={`relative p-6 rounded-2xl border transition-all duration-500 cursor-default ${
+                  activeStep === i
+                    ? "border-white/[0.1] bg-white/[0.04] shadow-lg"
+                    : "border-white/[0.04] bg-white/[0.01]"
+                }`}
+              >
+                {activeStep === i && (
+                  <motion.div
+                    layoutId="step-glow"
+                    className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${s.bg} opacity-30`}
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  />
+                )}
+                <div className="relative z-10">
+                  <motion.div
+                    animate={activeStep === i ? { scale: [1, 1.1, 1] } : {}}
+                    transition={{ duration: 0.5 }}
+                    className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${s.bg} border ${s.border} flex items-center justify-center mb-5`}
+                  >
+                    <s.icon className={`w-6 h-6 ${s.color}`} />
+                  </motion.div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-[10px] font-mono text-muted tracking-wider font-bold">STEP {s.step}</span>
+                    <ArrowRight className="w-3 h-3 text-muted/30" />
+                  </div>
+                  <h3 className="font-bold text-lg mb-1">{s.title}</h3>
+                  <p className="text-sm text-muted leading-relaxed">{s.desc}</p>
                 </div>
-                <h3 className="font-bold text-lg mb-1">{s.title}</h3>
-                <p className="text-sm text-muted leading-relaxed">{s.desc}</p>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </motion.div>
 
         {/* Terminal */}
@@ -150,7 +240,9 @@ export function DemoSection() {
           <motion.div
             className="absolute -inset-6 rounded-3xl opacity-50"
             style={{
-              background: "linear-gradient(135deg, rgba(0,229,255,0.08) 0%, rgba(124,58,237,0.08) 50%, rgba(0,214,143,0.06) 100%)",
+              background: mode === "photo"
+                ? "linear-gradient(135deg, rgba(0,229,255,0.08) 0%, rgba(124,58,237,0.08) 50%, rgba(0,214,143,0.06) 100%)"
+                : "linear-gradient(135deg, rgba(34,211,238,0.08) 0%, rgba(124,58,237,0.08) 50%, rgba(0,214,143,0.06) 100%)",
               filter: "blur(40px)",
             }}
             animate={{ opacity: [0.3, 0.6, 0.3] }}
@@ -165,31 +257,41 @@ export function DemoSection() {
               </div>
               <span className="ml-3 text-[10px] text-muted font-mono flex items-center gap-1.5 font-medium">
                 <ShoppingBasket className="w-3 h-3" />
-                shadow-basket // vision-engine
+                shadow-basket // {mode === "photo" ? "vision-engine" : "voice-engine"}
               </span>
             </div>
             <div className="p-6 font-mono text-[11px] space-y-1.5 min-h-[340px] leading-relaxed bg-card/80">
-              {scanSteps.map((step, i) => (
+              <AnimatePresence mode="wait">
                 <motion.div
-                  key={i}
-                  initial={{ opacity: 0, x: -8 }}
-                  animate={visibleSteps.includes(i) ? { opacity: 1, x: 0 } : { opacity: 0 }}
+                  key={mode}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
                   transition={{ duration: 0.3 }}
-                  className={
-                    step.type === "done" ? "text-success font-bold flex items-center gap-2 pt-2" :
-                    step.type === "detect" ? "text-accent" :
-                    "text-muted"
-                  }
                 >
-                  {step.type === "done" && <Check className="w-4 h-4" />}
-                  {step.text}
+                  {currentScanSteps.map((step, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={visibleSteps.includes(i) ? { opacity: 1, x: 0 } : { opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className={
+                        step.type === "done" ? "text-success font-bold flex items-center gap-2 pt-2" :
+                        step.type === "detect" ? mode === "photo" ? "text-accent" : "text-cyan-400" :
+                        "text-muted"
+                      }
+                    >
+                      {step.type === "done" && <Check className="w-4 h-4" />}
+                      {step.text}
+                    </motion.div>
+                  ))}
                 </motion.div>
-              ))}
-              {visibleSteps.length < scanSteps.length && (
+              </AnimatePresence>
+              {visibleSteps.length < currentScanSteps.length && (
                 <motion.span
                   animate={{ opacity: [1, 0] }}
                   transition={{ duration: 0.5, repeat: Infinity }}
-                  className="inline-block w-2 h-4 bg-accent rounded-sm"
+                  className={`inline-block w-2 h-4 rounded-sm ${mode === "photo" ? "bg-accent" : "bg-cyan-400"}`}
                 />
               )}
             </div>
