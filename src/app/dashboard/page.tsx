@@ -12,6 +12,7 @@ import { WasteView } from "@/components/dashboard/waste-view";
 import { InsightsView } from "@/components/dashboard/insights-view";
 import { AddItemModal } from "@/components/dashboard/add-item-modal";
 import { PhotoUploadModal } from "@/components/dashboard/photo-upload-modal";
+import { VoiceCommand } from "@/components/dashboard/voice-command";
 import { MOCK_ITEMS } from "@/lib/mock-data";
 import { InventoryItem } from "@/lib/types";
 import { supabase, getUser } from "@/lib/supabase";
@@ -160,6 +161,8 @@ export default function Dashboard() {
       <AnimatePresence>
         {showPhotoModal && <PhotoUploadModal onClose={() => setShowPhotoModal(false)} onItemsDetected={handlePhotoItems} />}
       </AnimatePresence>
+
+      <VoiceCommand items={items} userId={userId} onItemsChange={fetchItems} />
     </div>
   );
 }
