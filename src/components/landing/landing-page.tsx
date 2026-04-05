@@ -3,7 +3,7 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef, useEffect } from "react";
 import { AnimatedGrid } from "./animated-grid";
-import { HeroSection } from "./hero-section";
+import { HeroSection, DashboardPreviewSection } from "./hero-section";
 import { FeaturesSection } from "./features-section";
 import { DemoSection } from "./demo-section";
 import { CTASection } from "./cta-section";
@@ -107,6 +107,10 @@ export function LandingPage() {
 
       <div className="relative z-10 space-y-0">
         <HeroSection />
+
+        <div className="gsap-reveal">
+          <DashboardPreviewSection />
+        </div>
 
         <div className="max-w-5xl mx-auto px-6">
           <div className="gsap-line-draw w-full h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent origin-center" />

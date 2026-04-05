@@ -1,7 +1,7 @@
 "use client";
 
-import { motion, useMotionValue, useTransform, AnimatePresence } from "framer-motion";
-import { ArrowRight, ShoppingBasket, Sparkles, Zap, Play, Mic } from "lucide-react";
+import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
+import { ArrowRight, Sparkles, Zap, Play, Mic, ShoppingBasket } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -86,11 +86,6 @@ function VoiceExampleCycler() {
 }
 
 export function HeroSection() {
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  const rotateX = useTransform(mouseY, [-300, 300], [4, -4]);
-  const rotateY = useTransform(mouseX, [-300, 300], [-4, 4]);
-
   return (
     <section className="relative px-6 pt-32 pb-32">
       <motion.div
@@ -197,57 +192,6 @@ export function HeroSection() {
           </a>
         </motion.div>
 
-        {/* 3D Floating dashboard preview */}
-        <motion.div
-          initial={{ opacity: 0, y: 60 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.2, delay: 1.5, ease: "easeOut" }}
-          className="mt-32 relative mx-auto max-w-4xl"
-          style={{ perspective: 1200 }}
-          onMouseMove={(e) => {
-            const rect = e.currentTarget.getBoundingClientRect();
-            mouseX.set(e.clientX - rect.left - rect.width / 2);
-            mouseY.set(e.clientY - rect.top - rect.height / 2);
-          }}
-          onMouseLeave={() => {
-            mouseX.set(0);
-            mouseY.set(0);
-          }}
-        >
-          {/* Glow behind card */}
-          <motion.div
-            className="absolute -inset-8 rounded-3xl opacity-60"
-            style={{
-              background: "linear-gradient(135deg, rgba(0,229,255,0.15) 0%, rgba(124,58,237,0.12) 50%, rgba(244,63,94,0.10) 100%)",
-              filter: "blur(60px)",
-            }}
-            animate={{ opacity: [0.4, 0.7, 0.4] }}
-            transition={{ duration: 4, repeat: Infinity }}
-          />
-
-          <motion.div
-            style={{ rotateX, rotateY }}
-            transition={{ type: "spring", stiffness: 100, damping: 30 }}
-            className="relative rounded-2xl border border-white/[0.1] overflow-hidden shadow-2xl shadow-black/40"
-          >
-            {/* Glass top bar */}
-            <div className="h-11 border-b border-white/[0.06] flex items-center px-4 gap-2 bg-white/[0.02] backdrop-blur-xl">
-              <div className="flex gap-2">
-                <motion.div whileHover={{ scale: 1.3 }} className="w-3 h-3 rounded-full bg-accent-3/70" />
-                <motion.div whileHover={{ scale: 1.3 }} className="w-3 h-3 rounded-full bg-warning/70" />
-                <motion.div whileHover={{ scale: 1.3 }} className="w-3 h-3 rounded-full bg-success/70" />
-              </div>
-              <div className="flex-1 flex justify-center">
-                <div className="flex items-center gap-2 px-5 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.05]">
-                  <ShoppingBasket className="w-3 h-3 text-accent/50" />
-                  <span className="text-[10px] text-muted font-mono">shadow-basket.app/dashboard</span>
-                </div>
-              </div>
-            </div>
-            <DashboardPreview />
-          </motion.div>
-        </motion.div>
-
         {/* Description + Scroll indicator */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -255,8 +199,11 @@ export function HeroSection() {
           transition={{ delay: 2.5 }}
           className="mt-24 flex flex-col items-center gap-5"
         >
-          <p className="text-xs sm:text-sm text-muted/50 max-w-xl text-center leading-relaxed font-medium">
-            Shadow Basket is the <span className="text-muted/70">AI-native command center</span> for home inventory. Snap a photo. Speak a command. Track burn rates. <span className="text-muted/70">Eliminate waste.</span>
+          <p className="text-sm sm:text-base md:text-lg text-muted/60 max-w-2xl text-center leading-relaxed font-medium">
+            Shadow Basket is the{" "}
+            <span className="text-foreground font-bold">AI-native command center</span>{" "}
+            for home inventory. Snap a photo. Speak a command. Track burn rates.{" "}
+            <span className="gradient-text-animate font-bold">Eliminate waste.</span>
           </p>
           <span className="text-[10px] text-muted/40 tracking-[0.3em] uppercase font-medium">Scroll to explore</span>
           <motion.div
@@ -276,7 +223,64 @@ export function HeroSection() {
   );
 }
 
-function DashboardPreview() {
+export function DashboardPreviewSection() {
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const rotateX = useTransform(mouseY, [-300, 300], [4, -4]);
+  const rotateY = useTransform(mouseX, [-300, 300], [-4, 4]);
+
+  return (
+    <section className="relative py-32 px-6">
+      <div className="max-w-4xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 60 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 1.2, ease: "easeOut" }}
+          style={{ perspective: 1200 }}
+          onMouseMove={(e) => {
+            const rect = e.currentTarget.getBoundingClientRect();
+            mouseX.set(e.clientX - rect.left - rect.width / 2);
+            mouseY.set(e.clientY - rect.top - rect.height / 2);
+          }}
+          onMouseLeave={() => { mouseX.set(0); mouseY.set(0); }}
+        >
+          <motion.div
+            className="absolute -inset-8 rounded-3xl opacity-60"
+            style={{
+              background: "linear-gradient(135deg, rgba(0,229,255,0.15) 0%, rgba(124,58,237,0.12) 50%, rgba(244,63,94,0.10) 100%)",
+              filter: "blur(60px)",
+            }}
+            animate={{ opacity: [0.4, 0.7, 0.4] }}
+            transition={{ duration: 4, repeat: Infinity }}
+          />
+          <motion.div
+            style={{ rotateX, rotateY }}
+            transition={{ type: "spring", stiffness: 100, damping: 30 }}
+            className="relative rounded-2xl border border-white/[0.1] overflow-hidden shadow-2xl shadow-black/40"
+          >
+            <div className="h-11 border-b border-white/[0.06] flex items-center px-4 gap-2 bg-white/[0.02] backdrop-blur-xl">
+              <div className="flex gap-2">
+                <motion.div whileHover={{ scale: 1.3 }} className="w-3 h-3 rounded-full bg-accent-3/70" />
+                <motion.div whileHover={{ scale: 1.3 }} className="w-3 h-3 rounded-full bg-warning/70" />
+                <motion.div whileHover={{ scale: 1.3 }} className="w-3 h-3 rounded-full bg-success/70" />
+              </div>
+              <div className="flex-1 flex justify-center">
+                <div className="flex items-center gap-2 px-5 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.05]">
+                  <ShoppingBasket className="w-3 h-3 text-accent/50" />
+                  <span className="text-[10px] text-muted font-mono">shadow-basket.app/dashboard</span>
+                </div>
+              </div>
+            </div>
+            <DashboardPreviewContent />
+          </motion.div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+function DashboardPreviewContent() {
   const items = [
     { name: "Organic Milk", cat: "Dairy", pct: 23, burn: "HIGH", health: "C" },
     { name: "Sourdough Bread", cat: "Grains", pct: 67, burn: "MED", health: "A" },
@@ -296,8 +300,9 @@ function DashboardPreview() {
           <motion.div
             key={s.label}
             initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.8 + i * 0.1 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 + i * 0.1 }}
             className="border border-white/[0.06] rounded-xl p-3 bg-white/[0.02] hover:bg-white/[0.04] transition-colors"
           >
             <p className="text-[9px] font-mono text-muted tracking-wider font-medium">{s.label}</p>
@@ -310,8 +315,9 @@ function DashboardPreview() {
           <motion.div
             key={item.name}
             initial={{ opacity: 0, x: -15 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 2.2 + i * 0.1 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.4 + i * 0.1 }}
             className="flex items-center justify-between py-3 border-b border-white/[0.04] last:border-0 hover:bg-white/[0.01] px-2 rounded-lg transition-colors"
           >
             <div className="flex items-center gap-3">
@@ -331,7 +337,7 @@ function DashboardPreview() {
                 <motion.div
                   initial={{ width: 0 }}
                   animate={{ width: `${item.pct}%` }}
-                  transition={{ delay: 2.4 + i * 0.1, duration: 1, ease: "easeOut" }}
+                  transition={{ delay: 0.6 + i * 0.1, duration: 1, ease: "easeOut" }}
                   className={`h-full rounded-full ${item.pct <= 15 ? "bg-danger" : item.pct <= 40 ? "bg-warning" : "bg-success"}`}
                 />
               </div>
