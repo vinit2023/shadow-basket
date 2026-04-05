@@ -103,7 +103,7 @@ export function MealsView({ items }: Props) {
         <div className="flex items-center gap-3 px-4 py-3 bg-accent-2/5 border border-accent-2/20 rounded-xl flex-1">
           <Brain className="w-4 h-4 text-accent-2" />
           <p className="text-sm text-accent-2 font-medium">
-            <span className="font-bold">{loading ? "Generating" : meals.length} meal ideas</span> {aiPowered ? "powered by Gemini AI" : "generated from your current inventory"}
+            <span className="font-bold">{loading ? "Generating" : meals.length} meal ideas</span> {aiPowered ? "powered by AI" : "generated from your current inventory"}
             <span className="text-muted ml-2 text-[10px]">Click any meal for full recipe</span>
           </p>
         </div>
@@ -180,7 +180,7 @@ export function MealsView({ items }: Props) {
               {loadingRecipe ? (
                 <div className="flex flex-col items-center py-16">
                   <Loader2 className="w-10 h-10 text-accent-2 animate-spin mb-4" />
-                  <p className="text-sm text-muted font-medium">Generating recipe with Gemini AI...</p>
+                  <p className="text-sm text-muted font-medium">Generating recipe with AI...</p>
                   <p className="text-[10px] text-muted/50 mt-1">Ingredients, steps, tips & video links</p>
                 </div>
               ) : recipe ? (
