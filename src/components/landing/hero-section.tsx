@@ -248,13 +248,16 @@ export function HeroSection() {
           </motion.div>
         </motion.div>
 
-        {/* Scroll indicator */}
+        {/* Description + Scroll indicator */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 3 }}
-          className="mt-12 flex flex-col items-center gap-3"
+          transition={{ delay: 2.5 }}
+          className="mt-12 flex flex-col items-center gap-4"
         >
+          <p className="text-xs sm:text-sm text-muted/50 max-w-xl text-center leading-relaxed font-medium">
+            Shadow Basket is the <span className="text-muted/70">AI-native command center</span> for home inventory. Snap a photo. Speak a command. Track burn rates. <span className="text-muted/70">Eliminate waste.</span>
+          </p>
           <span className="text-[10px] text-muted/40 tracking-[0.3em] uppercase font-medium">Scroll to explore</span>
           <motion.div
             animate={{ y: [0, 8, 0] }}
