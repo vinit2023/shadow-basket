@@ -1,9 +1,9 @@
 "use client";
 
-import { motion, useMotionValue, useTransform, useInView, AnimatePresence } from "framer-motion";
+import { motion, useMotionValue, useTransform, AnimatePresence } from "framer-motion";
 import { ArrowRight, ShoppingBasket, Sparkles, Zap, Play, Mic } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 
 // Typewriter with smooth cursor
 function TypewriterText({ texts, className }: { texts: string[]; className?: string }) {
@@ -50,36 +50,6 @@ function TypewriterText({ texts, className }: { texts: string[]; className?: str
   );
 }
 
-// Animated counter
-function Counter({ target, suffix = "", prefix = "" }: { target: string; suffix?: string; prefix?: string }) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const isInView = useInView(ref, { once: true });
-  const [value, setValue] = useState(0);
-  const numericTarget = parseFloat(target.replace(/[^0-9.]/g, ""));
-
-  useEffect(() => {
-    if (!isInView) return;
-    const duration = 2000;
-    const steps = 60;
-    const increment = numericTarget / steps;
-    let current = 0;
-    const timer = setInterval(() => {
-      current += increment;
-      if (current >= numericTarget) {
-        current = numericTarget;
-        clearInterval(timer);
-      }
-      setValue(current);
-    }, duration / steps);
-    return () => clearInterval(timer);
-  }, [isInView, numericTarget]);
-
-  const display = target.includes(".")
-    ? `${prefix}${value.toFixed(1)}${suffix}`
-    : `${prefix}${Math.round(value)}${suffix}`;
-
-  return <span ref={ref}>{isInView ? display : `${prefix}0${suffix}`}</span>;
-}
 
 const voiceExamples = [
   '"Hey Shadow, add milk"',
@@ -173,17 +143,14 @@ export function HeroSection() {
           </span>
         </motion.h1>
 
-        {/* Subheadline */}
+        {/* Tagline */}
         <motion.p
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.7 }}
-          className="mt-8 text-base sm:text-lg md:text-xl text-muted max-w-2xl mx-auto leading-relaxed font-medium"
+          className="mt-8 text-base sm:text-lg text-muted/70 italic font-medium tracking-wide"
         >
-          Shadow Basket is the{" "}
-          <span className="text-foreground font-semibold">AI-native command center</span> for home inventory.
-          Snap a photo. Speak a command. Track burn rates.{" "}
-          <span className="text-accent font-semibold">Eliminate waste.</span>
+          Life&apos;s too short to count eggs. <span className="text-foreground not-italic font-bold">Let Shadow remember for you.</span>
         </motion.p>
 
         {/* Voice Command Floating Examples */}
@@ -191,7 +158,7 @@ export function HeroSection() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.8 }}
-          className="mt-10 flex items-center justify-center"
+          className="mt-6 flex items-center justify-center"
         >
           <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl border border-cyan-400/20 bg-cyan-400/[0.04] backdrop-blur-sm">
             <motion.div
@@ -204,21 +171,11 @@ export function HeroSection() {
           </div>
         </motion.div>
 
-        {/* Tagline */}
-        <motion.p
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.85 }}
-          className="mt-8 text-sm sm:text-base text-muted/70 italic font-medium tracking-wide"
-        >
-          Life&apos;s too short to count eggs. <span className="text-foreground not-italic font-bold">Let Shadow remember for you.</span>
-        </motion.p>
-
         {/* CTA Buttons */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.95 }}
+          transition={{ duration: 0.8, delay: 0.9 }}
           className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4"
         >
           <Link href="/auth?mode=signup" className="group relative inline-flex items-center gap-2 px-8 py-4 rounded-2xl text-sm font-bold overflow-hidden shadow-lg shadow-accent/20 hover:shadow-accent/30 transition-shadow">
@@ -240,41 +197,12 @@ export function HeroSection() {
           </a>
         </motion.div>
 
-        {/* Stats — animated counters */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 1.1 }}
-          className="mt-20 grid grid-cols-3 gap-8 max-w-xl mx-auto"
-        >
-          {[
-            { value: "99.2", suffix: "%", label: "AI Accuracy" },
-            { value: "1.8", suffix: "s", label: "Photo Scan" },
-            { prefix: "$", value: "52", suffix: "", label: "Monthly Savings" },
-          ].map((stat, i) => (
-            <motion.div
-              key={stat.label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.3 + i * 0.15 }}
-              whileHover={{ scale: 1.08, y: -4 }}
-              className="text-center group cursor-default relative"
-            >
-              <div className="absolute inset-0 rounded-2xl bg-accent/[0.03] opacity-0 group-hover:opacity-100 transition-opacity -m-3" />
-              <p className="text-3xl sm:text-4xl font-black font-mono gradient-text-animate relative">
-                <Counter target={stat.value} suffix={stat.suffix} prefix={stat.prefix || ""} />
-              </p>
-              <p className="text-[10px] text-muted mt-2 tracking-[0.2em] uppercase font-bold relative">{stat.label}</p>
-            </motion.div>
-          ))}
-        </motion.div>
-
         {/* 3D Floating dashboard preview */}
         <motion.div
           initial={{ opacity: 0, y: 60 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1.2, delay: 1.5, ease: "easeOut" }}
-          className="mt-24 relative mx-auto max-w-4xl"
+          className="mt-16 relative mx-auto max-w-4xl"
           style={{ perspective: 1200 }}
           onMouseMove={(e) => {
             const rect = e.currentTarget.getBoundingClientRect();
@@ -325,7 +253,7 @@ export function HeroSection() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 3 }}
-          className="mt-20 flex flex-col items-center gap-3"
+          className="mt-12 flex flex-col items-center gap-3"
         >
           <span className="text-[10px] text-muted/40 tracking-[0.3em] uppercase font-medium">Scroll to explore</span>
           <motion.div

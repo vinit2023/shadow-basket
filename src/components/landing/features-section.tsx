@@ -1,8 +1,36 @@
 "use client";
 
 import { motion, useInView, AnimatePresence } from "framer-motion";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { LayoutList, Camera, AlertTriangle, Tag, Brain, LineChart, Leaf, Users, ArrowRight, Mic } from "lucide-react";
+
+function StatCounter({ target, suffix = "", prefix = "", inView }: { target: string; suffix?: string; prefix?: string; inView: boolean }) {
+  const [value, setValue] = useState(0);
+  const numericTarget = parseFloat(target.replace(/[^0-9.]/g, ""));
+
+  useEffect(() => {
+    if (!inView) return;
+    const duration = 2000;
+    const steps = 60;
+    const increment = numericTarget / steps;
+    let current = 0;
+    const timer = setInterval(() => {
+      current += increment;
+      if (current >= numericTarget) {
+        current = numericTarget;
+        clearInterval(timer);
+      }
+      setValue(current);
+    }, duration / steps);
+    return () => clearInterval(timer);
+  }, [inView, numericTarget]);
+
+  const display = target.includes(".")
+    ? `${prefix}${value.toFixed(1)}${suffix}`
+    : `${prefix}${Math.round(value)}${suffix}`;
+
+  return <>{inView ? display : `${prefix}0${suffix}`}</>;
+}
 
 const features: { icon: typeof LayoutList; title: string; description: string; color: string; iconColor: string; borderHover: string; detail: string; gradient: string; premium?: boolean }[] = [
   {
@@ -94,6 +122,34 @@ export function FeaturesSection() {
           <p className="mt-6 text-muted max-w-lg mx-auto font-medium text-base">
             Every feature is designed to save you time, money, and food.
           </p>
+        </motion.div>
+
+        {/* Stats bar */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="grid grid-cols-3 gap-6 max-w-lg mx-auto mb-16"
+        >
+          {[
+            { value: "99.2", suffix: "%", label: "AI Accuracy" },
+            { value: "1.8", suffix: "s", label: "Photo Scan" },
+            { prefix: "$", value: "52", suffix: "", label: "Monthly Savings" },
+          ].map((stat, i) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 15 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ delay: 0.4 + i * 0.1 }}
+              whileHover={{ scale: 1.05, y: -3 }}
+              className="text-center cursor-default"
+            >
+              <p className="text-2xl sm:text-3xl font-black font-mono gradient-text-animate">
+                <StatCounter target={stat.value} suffix={stat.suffix} prefix={stat.prefix || ""} inView={isInView} />
+              </p>
+              <p className="text-[10px] text-muted mt-1.5 tracking-[0.2em] uppercase font-bold">{stat.label}</p>
+            </motion.div>
+          ))}
         </motion.div>
 
         {/* Interactive feature showcase — ElevenLabs style */}
