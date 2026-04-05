@@ -105,28 +105,36 @@ export function LandingPage() {
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[600px] rounded-full bg-accent/[0.04] blur-[120px]" />
       </motion.div>
 
-      <div className="relative z-10">
+      <div className="relative z-10 space-y-0">
         <HeroSection />
 
-        <div className="gsap-line-draw w-full h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent origin-center" />
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="gsap-line-draw w-full h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent origin-center" />
+        </div>
 
         <div className="gsap-reveal">
           <FeaturesSection />
         </div>
 
-        <div className="gsap-line-draw w-full h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent origin-center" />
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="gsap-line-draw w-full h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent origin-center" />
+        </div>
 
         <div className="gsap-reveal">
           <DemoSection />
         </div>
 
-        <div className="gsap-line-draw w-full h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent origin-center" />
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="gsap-line-draw w-full h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent origin-center" />
+        </div>
 
         <div className="gsap-reveal">
           <TestimonialsSection />
         </div>
 
-        <div className="gsap-line-draw w-full h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent origin-center" />
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="gsap-line-draw w-full h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent origin-center" />
+        </div>
 
         <div className="gsap-reveal">
           <CTASection />

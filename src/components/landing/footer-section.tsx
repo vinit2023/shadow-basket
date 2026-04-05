@@ -15,7 +15,7 @@ export function FooterSection() {
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[600px] h-[200px] bg-accent/[0.02] rounded-full blur-[80px]" />
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 py-16 relative z-10">
+      <div className="max-w-6xl mx-auto px-6 py-20 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}

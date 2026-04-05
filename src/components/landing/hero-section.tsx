@@ -122,7 +122,7 @@ export function HeroSection() {
   const rotateY = useTransform(mouseX, [-300, 300], [-4, 4]);
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center px-6 pt-24 pb-12">
+    <section className="relative min-h-screen flex items-center justify-center px-6 pt-24 pb-32">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
