@@ -15,9 +15,15 @@ import { PhotoUploadModal } from "@/components/dashboard/photo-upload-modal";
 import { MOCK_ITEMS } from "@/lib/mock-data";
 import { InventoryItem } from "@/lib/types";
 import { supabase, getUser } from "@/lib/supabase";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 export type Tab = "ledger" | "restock" | "deals" | "meals" | "waste" | "insights";
+
+const tabVariants = {
+  initial: { opacity: 0, y: 12, scale: 0.99 },
+  animate: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.4, ease: "easeOut" as const } },
+  exit: { opacity: 0, y: -8, scale: 0.99, transition: { duration: 0.2 } },
+};
 
 export default function Dashboard() {
   const router = useRouter();
@@ -93,32 +99,67 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen overflow-hidden bg-background">
+      {/* Subtle background gradient for dashboard */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full bg-accent/[0.02] blur-[100px]" />
+        <div className="absolute bottom-0 left-0 w-[400px] h-[400px] rounded-full bg-accent-2/[0.02] blur-[80px]" />
+      </div>
+
       <DashboardSidebar activeTab={activeTab} onTabChange={setActiveTab} />
-      <main className="flex-1 flex flex-col overflow-hidden">
+      <main className="flex-1 flex flex-col overflow-hidden relative z-10">
         <DashboardHeader activeTab={activeTab} itemCount={items.length} onAddItem={() => setShowAddModal(true)} onPhotoUpload={() => setShowPhotoModal(true)} items={items} />
-        <motion.div key={activeTab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="flex-1 overflow-auto p-6">
-          {loading ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="flex flex-col items-center gap-3">
-                <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }} className="w-8 h-8 border-2 border-accent/20 border-t-accent rounded-full" />
-                <p className="text-sm text-muted font-mono">Loading inventory...</p>
-              </div>
-            </div>
-          ) : (
-            <>
-              {activeTab === "ledger" && <LedgerView items={items} onItemsChange={fetchItems} />}
-              {activeTab === "restock" && <RestockView items={items} />}
-              {activeTab === "deals" && <DealsView items={items} />}
-              {activeTab === "meals" && <MealsView items={items} />}
-              {activeTab === "waste" && <WasteView items={items} />}
-              {activeTab === "insights" && <InsightsView items={items} />}
-            </>
-          )}
-        </motion.div>
+
+        {/* Tab content with smooth morph transitions */}
+        <div className="flex-1 overflow-auto p-6">
+          <AnimatePresence mode="wait">
+            {loading ? (
+              <motion.div
+                key="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex items-center justify-center h-full"
+              >
+                <div className="flex flex-col items-center gap-4">
+                  <div className="relative">
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                      className="w-10 h-10 border-2 border-accent/20 border-t-accent rounded-full"
+                    />
+                    <div className="absolute inset-0 w-10 h-10 rounded-full bg-accent/5 blur-xl" />
+                  </div>
+                  <p className="text-sm text-muted font-mono">Loading inventory...</p>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key={activeTab}
+                variants={tabVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+              >
+                {activeTab === "ledger" && <LedgerView items={items} onItemsChange={fetchItems} />}
+                {activeTab === "restock" && <RestockView items={items} />}
+                {activeTab === "deals" && <DealsView items={items} />}
+                {activeTab === "meals" && <MealsView items={items} />}
+                {activeTab === "waste" && <WasteView items={items} />}
+                {activeTab === "insights" && <InsightsView items={items} />}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
       </main>
-      {showAddModal && <AddItemModal onClose={() => setShowAddModal(false)} onAdd={handleAddItem} />}
-      {showPhotoModal && <PhotoUploadModal onClose={() => setShowPhotoModal(false)} onItemsDetected={handlePhotoItems} />}
+
+      {/* Modals with enhanced backdrop */}
+      <AnimatePresence>
+        {showAddModal && <AddItemModal onClose={() => setShowAddModal(false)} onAdd={handleAddItem} />}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showPhotoModal && <PhotoUploadModal onClose={() => setShowPhotoModal(false)} onItemsDetected={handlePhotoItems} />}
+      </AnimatePresence>
     </div>
   );
 }
