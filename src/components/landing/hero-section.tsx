@@ -92,7 +92,7 @@ export function HeroSection() {
   const rotateY = useTransform(mouseX, [-300, 300], [-4, 4]);
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center px-6 pt-24 pb-32">
+    <section className="relative px-6 pt-32 pb-32">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -148,7 +148,7 @@ export function HeroSection() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.7 }}
-          className="mt-8 text-base sm:text-lg text-muted/70 italic font-medium tracking-wide"
+          className="mt-10 text-base sm:text-lg text-muted/70 italic font-medium tracking-wide"
         >
           Life&apos;s too short to count eggs. <span className="text-foreground not-italic font-bold">Let Shadow remember for you.</span>
         </motion.p>
@@ -158,7 +158,7 @@ export function HeroSection() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.8 }}
-          className="mt-6 flex items-center justify-center"
+          className="mt-8 flex items-center justify-center"
         >
           <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl border border-cyan-400/20 bg-cyan-400/[0.04] backdrop-blur-sm">
             <motion.div
@@ -176,7 +176,7 @@ export function HeroSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.9 }}
-          className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4"
+          className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
         >
           <Link href="/auth?mode=signup" className="group relative inline-flex items-center gap-2 px-8 py-4 rounded-2xl text-sm font-bold overflow-hidden shadow-lg shadow-accent/20 hover:shadow-accent/30 transition-shadow">
             <motion.div
@@ -202,7 +202,7 @@ export function HeroSection() {
           initial={{ opacity: 0, y: 60 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1.2, delay: 1.5, ease: "easeOut" }}
-          className="mt-16 relative mx-auto max-w-4xl"
+          className="mt-32 relative mx-auto max-w-4xl"
           style={{ perspective: 1200 }}
           onMouseMove={(e) => {
             const rect = e.currentTarget.getBoundingClientRect();
@@ -253,7 +253,7 @@ export function HeroSection() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 2.5 }}
-          className="mt-12 flex flex-col items-center gap-4"
+          className="mt-24 flex flex-col items-center gap-5"
         >
           <p className="text-xs sm:text-sm text-muted/50 max-w-xl text-center leading-relaxed font-medium">
             Shadow Basket is the <span className="text-muted/70">AI-native command center</span> for home inventory. Snap a photo. Speak a command. Track burn rates. <span className="text-muted/70">Eliminate waste.</span>
