@@ -204,11 +204,21 @@ export function HeroSection() {
           </div>
         </motion.div>
 
+        {/* Tagline */}
+        <motion.p
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.85 }}
+          className="mt-8 text-sm sm:text-base text-muted/70 italic font-medium tracking-wide"
+        >
+          Life&apos;s too short to count eggs. <span className="text-foreground not-italic font-bold">Let Shadow remember for you.</span>
+        </motion.p>
+
         {/* CTA Buttons */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.9 }}
+          transition={{ duration: 0.8, delay: 0.95 }}
           className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4"
         >
           <Link href="/auth?mode=signup" className="group relative inline-flex items-center gap-2 px-8 py-4 rounded-2xl text-sm font-bold overflow-hidden shadow-lg shadow-accent/20 hover:shadow-accent/30 transition-shadow">
