@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ShoppingBasket, Mail, Lock, User, ArrowRight, Eye, EyeOff, Globe, TerminalSquare, AlertCircle } from "lucide-react";
 import Link from "next/link";
-import { signUp, signIn } from "@/lib/supabase";
+import { signUp, signIn, signInWithGoogle, signInWithGitHub } from "@/lib/supabase";
 import ReCAPTCHA from "react-google-recaptcha";
 
 const testimonials = [
@@ -221,10 +221,24 @@ export function AuthPage() {
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              <button className="flex items-center justify-center gap-2 py-3 rounded-xl border border-white/[0.08] bg-white/[0.02] text-xs text-muted hover:text-foreground hover:border-white/15 transition-all font-medium">
+              <button
+                onClick={async () => {
+                  setError("");
+                  const { error: e } = await signInWithGoogle();
+                  if (e) setError(e.message);
+                }}
+                className="flex items-center justify-center gap-2 py-3 rounded-xl border border-white/[0.08] bg-white/[0.02] text-xs text-muted hover:text-foreground hover:border-white/15 transition-all font-medium"
+              >
                 <Globe className="w-4 h-4" /> Google
               </button>
-              <button className="flex items-center justify-center gap-2 py-3 rounded-xl border border-white/[0.08] bg-white/[0.02] text-xs text-muted hover:text-foreground hover:border-white/15 transition-all font-medium">
+              <button
+                onClick={async () => {
+                  setError("");
+                  const { error: e } = await signInWithGitHub();
+                  if (e) setError(e.message);
+                }}
+                className="flex items-center justify-center gap-2 py-3 rounded-xl border border-white/[0.08] bg-white/[0.02] text-xs text-muted hover:text-foreground hover:border-white/15 transition-all font-medium"
+              >
                 <TerminalSquare className="w-4 h-4" /> GitHub
               </button>
             </div>

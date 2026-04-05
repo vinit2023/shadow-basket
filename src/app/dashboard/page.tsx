@@ -107,7 +107,7 @@ export default function Dashboard() {
             </div>
           ) : (
             <>
-              {activeTab === "ledger" && <LedgerView items={items} />}
+              {activeTab === "ledger" && <LedgerView items={items} onItemsChange={fetchItems} />}
               {activeTab === "restock" && <RestockView items={items} />}
               {activeTab === "deals" && <DealsView items={items} />}
               {activeTab === "meals" && <MealsView items={items} />}

@@ -1,6 +1,7 @@
 "use client";
 
 import { InventoryItem } from "@/lib/types";
+import { CATEGORIES, UNIT_TYPES } from "@/lib/types";
 import {
   estimatedRemainingPercent,
   burnRateLabel,
@@ -12,11 +13,14 @@ import {
 } from "@/lib/inventory";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
-import { motion } from "framer-motion";
-import { ArrowDown, ArrowRight, ArrowUp, Flame, TrendingUp } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowDown, ArrowRight, ArrowUp, Flame, TrendingUp, Trash2, Pencil, X, Check } from "lucide-react";
+import { useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 interface Props {
   items: InventoryItem[];
+  onItemsChange?: () => void;
 }
 
 function BurnIndicator({ rate }: { rate: number }) {
@@ -61,7 +65,11 @@ function StockBar({ pct }: { pct: number }) {
   );
 }
 
-export function LedgerView({ items }: Props) {
+export function LedgerView({ items, onItemsChange }: Props) {
+  const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
+  const [editForm, setEditForm] = useState<Partial<InventoryItem>>({});
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
   const critical = items.filter((i) => estimatedRemainingPercent(i) <= 15).length;
   const warning = items.filter((i) => {
     const pct = estimatedRemainingPercent(i);
@@ -75,6 +83,33 @@ export function LedgerView({ items }: Props) {
     { label: "WARNING", value: warning, accent: "text-warning", icon: ArrowRight },
     { label: "HEALTHY", value: healthy, accent: "text-success", icon: ArrowDown },
   ];
+
+  const handleDelete = async (id: string) => {
+    setDeletingId(id);
+    await supabase.from("items").delete().eq("id", id);
+    setDeletingId(null);
+    onItemsChange?.();
+  };
+
+  const startEdit = (item: InventoryItem) => {
+    setEditingItem(item);
+    setEditForm({
+      name: item.name,
+      category: item.category,
+      unit_type: item.unit_type,
+      current_stock_level: item.current_stock_level,
+      max_stock_level: item.max_stock_level,
+      daily_burn_rate: item.daily_burn_rate,
+    });
+  };
+
+  const saveEdit = async () => {
+    if (!editingItem) return;
+    await supabase.from("items").update(editForm).eq("id", editingItem.id);
+    setEditingItem(null);
+    setEditForm({});
+    onItemsChange?.();
+  };
 
   return (
     <div className="space-y-6">
@@ -139,6 +174,9 @@ export function LedgerView({ items }: Props) {
               <th className="text-left px-4 py-3 text-[11px] font-mono text-muted tracking-wider">
                 STATUS
               </th>
+              <th className="text-left px-4 py-3 text-[11px] font-mono text-muted tracking-wider">
+                ACTIONS
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -152,7 +190,8 @@ export function LedgerView({ items }: Props) {
                   transition={{ duration: 0.3, delay: 0.4 + idx * 0.04 }}
                   className={cn(
                     "border-b border-card-border/50 hover:bg-white/[0.02] transition-colors",
-                    idx % 2 === 0 ? "bg-transparent" : "bg-white/[0.01]"
+                    idx % 2 === 0 ? "bg-transparent" : "bg-white/[0.01]",
+                    deletingId === item.id ? "opacity-30" : ""
                   )}
                 >
                   <td className="px-4 py-3">
@@ -216,12 +255,134 @@ export function LedgerView({ items }: Props) {
                       {pct <= 15 ? "CRITICAL" : pct <= 40 ? "LOW" : "OK"}
                     </span>
                   </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => startEdit(item)}
+                        className="p-1.5 rounded-lg hover:bg-accent/10 text-muted hover:text-accent transition-all"
+                        title="Edit item"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(item.id)}
+                        className="p-1.5 rounded-lg hover:bg-danger/10 text-muted hover:text-danger transition-all"
+                        title="Delete item"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </td>
                 </motion.tr>
               );
             })}
           </tbody>
         </table>
       </motion.div>
+
+      {/* Edit Modal */}
+      <AnimatePresence>
+        {editingItem && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            onClick={() => setEditingItem(null)}
+          >
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-md bg-card border border-card-border rounded-2xl p-6"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-base font-bold">Edit Item</h3>
+                <button onClick={() => setEditingItem(null)} className="p-1.5 rounded-lg hover:bg-white/5 text-muted hover:text-foreground transition-colors">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="text-[11px] font-mono text-muted tracking-wider block mb-1.5 font-bold">NAME</label>
+                  <input
+                    type="text"
+                    value={editForm.name || ""}
+                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                    className="w-full px-3 py-2.5 text-sm bg-white/[0.03] border border-white/[0.08] rounded-xl text-foreground focus:outline-none focus:border-accent/40 transition-colors"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[11px] font-mono text-muted tracking-wider block mb-1.5 font-bold">CATEGORY</label>
+                    <select
+                      value={editForm.category || ""}
+                      onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
+                      className="w-full px-3 py-2.5 text-sm bg-white/[0.03] border border-white/[0.08] rounded-xl text-foreground focus:outline-none focus:border-accent/40 transition-colors"
+                    >
+                      {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-mono text-muted tracking-wider block mb-1.5 font-bold">UNIT</label>
+                    <select
+                      value={editForm.unit_type || ""}
+                      onChange={(e) => setEditForm({ ...editForm, unit_type: e.target.value })}
+                      className="w-full px-3 py-2.5 text-sm bg-white/[0.03] border border-white/[0.08] rounded-xl text-foreground focus:outline-none focus:border-accent/40 transition-colors"
+                    >
+                      {UNIT_TYPES.map((u) => <option key={u} value={u}>{u}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className="text-[11px] font-mono text-muted tracking-wider block mb-1.5 font-bold">CURRENT</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={editForm.current_stock_level || 0}
+                      onChange={(e) => setEditForm({ ...editForm, current_stock_level: parseFloat(e.target.value) })}
+                      className="w-full px-3 py-2.5 text-sm bg-white/[0.03] border border-white/[0.08] rounded-xl text-foreground focus:outline-none focus:border-accent/40 transition-colors font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-mono text-muted tracking-wider block mb-1.5 font-bold">MAX</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={editForm.max_stock_level || 0}
+                      onChange={(e) => setEditForm({ ...editForm, max_stock_level: parseFloat(e.target.value) })}
+                      className="w-full px-3 py-2.5 text-sm bg-white/[0.03] border border-white/[0.08] rounded-xl text-foreground focus:outline-none focus:border-accent/40 transition-colors font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-mono text-muted tracking-wider block mb-1.5 font-bold">BURN/DAY</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={editForm.daily_burn_rate || 0}
+                      onChange={(e) => setEditForm({ ...editForm, daily_burn_rate: parseFloat(e.target.value) })}
+                      className="w-full px-3 py-2.5 text-sm bg-white/[0.03] border border-white/[0.08] rounded-xl text-foreground focus:outline-none focus:border-accent/40 transition-colors font-mono"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  onClick={saveEdit}
+                  className="w-full mt-2 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold bg-accent/10 border border-accent/20 text-accent hover:bg-accent/20 transition-all"
+                >
+                  <Check className="w-4 h-4" /> Save Changes
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

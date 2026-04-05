@@ -3,9 +3,18 @@
 import { InventoryItem } from "@/lib/types";
 import { estimatedRemainingPercent, daysUntilEmpty } from "@/lib/inventory";
 import { motion, AnimatePresence } from "framer-motion";
-import { Tag, Zap, ShoppingCart, X, Loader2, CheckCircle2, Crown } from "lucide-react";
+import { Tag, Zap, ShoppingCart, X, Loader2, CheckCircle2, Crown, ExternalLink } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
+
+const STORE_SEARCH_URLS: Record<string, (query: string) => string> = {
+  "BigBasket": (q) => `https://www.bigbasket.com/ps/?q=${encodeURIComponent(q)}`,
+  "Zepto": (q) => `https://www.zeptonow.com/search?query=${encodeURIComponent(q)}`,
+  "Swiggy Instamart": (q) => `https://www.swiggy.com/instamart/search?custom_back=true&query=${encodeURIComponent(q)}`,
+  "Amazon Fresh": (q) => `https://www.amazon.in/s?k=${encodeURIComponent(q)}&i=nowstore`,
+  "Flipkart Grocery": (q) => `https://www.flipkart.com/search?q=${encodeURIComponent(q)}&otracker=search&as-type=grocery`,
+  "JioMart": (q) => `https://www.jiomart.com/search/${encodeURIComponent(q)}`,
+};
 
 interface Props {
   items: InventoryItem[];
@@ -195,9 +204,15 @@ export function DealsView({ items }: Props) {
 
                         {listing.inStock && (
                           <div className="mt-3 flex gap-2">
-                            <button className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold bg-accent/10 border border-accent/20 rounded-lg text-accent hover:bg-accent/20 transition-all">
-                              <ShoppingCart className="w-3 h-3" /> Add to Cart
-                            </button>
+                            <a
+                              href={STORE_SEARCH_URLS[listing.store]?.(selectedItem.name) || "#"}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold bg-accent/10 border border-accent/20 rounded-lg text-accent hover:bg-accent/20 transition-all"
+                            >
+                              <ShoppingCart className="w-3 h-3" /> Buy on {listing.store} <ExternalLink className="w-2.5 h-2.5" />
+                            </a>
                             <button
                               onClick={(e) => { e.stopPropagation(); handleRestocked(selectedItem); }}
                               className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold bg-success/10 border border-success/20 rounded-lg text-success hover:bg-success/20 transition-all"

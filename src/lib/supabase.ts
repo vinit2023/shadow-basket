@@ -45,3 +45,23 @@ export async function getUser() {
   const { data: { user } } = await supabase.auth.getUser();
   return user;
 }
+
+export async function signInWithGoogle() {
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${window.location.origin}/dashboard`,
+    },
+  });
+  return { data, error };
+}
+
+export async function signInWithGitHub() {
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "github",
+    options: {
+      redirectTo: `${window.location.origin}/dashboard`,
+    },
+  });
+  return { data, error };
+}
