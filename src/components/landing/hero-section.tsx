@@ -87,12 +87,12 @@ function VoiceExampleCycler() {
 
 export function HeroSection() {
   return (
-    <section className="relative px-6 pt-32 pb-32">
+    <section className="relative px-6">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1 }}
-        className="max-w-6xl mx-auto text-center relative z-10"
+        className="max-w-6xl mx-auto text-center relative z-10 min-h-screen flex flex-col items-center justify-center"
       >
         {/* AI Badge */}
         <motion.div
@@ -192,19 +192,13 @@ export function HeroSection() {
           </a>
         </motion.div>
 
-        {/* Description + Scroll indicator */}
+        {/* Scroll indicator */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 2.5 }}
-          className="mt-24 flex flex-col items-center gap-5"
+          className="mt-16 flex flex-col items-center gap-3"
         >
-          <p className="text-sm sm:text-base md:text-lg text-muted/60 max-w-2xl text-center leading-relaxed font-medium">
-            Shadow Basket is the{" "}
-            <span className="text-foreground font-bold">AI-native command center</span>{" "}
-            for home inventory. Snap a photo. Speak a command. Track burn rates.{" "}
-            <span className="gradient-text-animate font-bold">Eliminate waste.</span>
-          </p>
           <span className="text-[10px] text-muted/40 tracking-[0.3em] uppercase font-medium">Scroll to explore</span>
           <motion.div
             animate={{ y: [0, 8, 0] }}
@@ -218,6 +212,22 @@ export function HeroSection() {
             />
           </motion.div>
         </motion.div>
+      </motion.div>
+
+      {/* Description — below the fold, after scroll */}
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-50px" }}
+        transition={{ duration: 0.8 }}
+        className="mt-32 mb-20 max-w-3xl mx-auto text-center"
+      >
+        <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-muted/50 leading-relaxed font-medium">
+          Shadow Basket is the{" "}
+          <span className="text-foreground font-bold">AI-native command center</span>{" "}
+          for home inventory. Snap a photo. Speak a command. Track burn rates.{" "}
+          <span className="gradient-text-animate font-bold">Eliminate waste.</span>
+        </p>
       </motion.div>
     </section>
   );
