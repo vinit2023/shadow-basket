@@ -1,7 +1,6 @@
 "use client";
 
-import { InventoryItem } from "@/lib/types";
-import { CATEGORIES, UNIT_TYPES } from "@/lib/types";
+import { InventoryItem, CATEGORIES, UNIT_TYPES } from "@/lib/types";
 import {
   estimatedRemainingPercent,
   burnRateLabel,
@@ -86,7 +85,11 @@ export function LedgerView({ items, onItemsChange }: Props) {
 
   const handleDelete = async (id: string) => {
     setDeletingId(id);
-    await supabase.from("items").delete().eq("id", id);
+    try {
+      await supabase.from("items").delete().eq("id", id);
+    } catch (err) {
+      console.error("Delete failed:", err);
+    }
     setDeletingId(null);
     onItemsChange?.();
   };
@@ -104,8 +107,12 @@ export function LedgerView({ items, onItemsChange }: Props) {
   };
 
   const saveEdit = async () => {
-    if (!editingItem) return;
-    await supabase.from("items").update(editForm).eq("id", editingItem.id);
+    if (!editingItem || !editForm.name?.trim()) return;
+    try {
+      await supabase.from("items").update(editForm).eq("id", editingItem.id);
+    } catch (err) {
+      console.error("Update failed:", err);
+    }
     setEditingItem(null);
     setEditForm({});
     onItemsChange?.();

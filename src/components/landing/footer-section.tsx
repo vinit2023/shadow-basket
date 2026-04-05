@@ -39,12 +39,12 @@ export function FooterSection() {
               <a href="https://github.com/vinit2023/shadow-basket" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-lg border border-white/[0.06] flex items-center justify-center text-muted hover:text-foreground hover:border-white/[0.12] transition-all">
                 <GitBranch className="w-3.5 h-3.5" />
               </a>
-              <span className="w-8 h-8 rounded-lg border border-white/[0.06] flex items-center justify-center text-muted hover:text-foreground hover:border-white/[0.12] transition-all cursor-pointer">
+              <a href="https://github.com/vinit2023/shadow-basket/issues" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-lg border border-white/[0.06] flex items-center justify-center text-muted hover:text-foreground hover:border-white/[0.12] transition-all">
                 <MessageCircle className="w-3.5 h-3.5" />
-              </span>
-              <span className="w-8 h-8 rounded-lg border border-white/[0.06] flex items-center justify-center text-muted hover:text-foreground hover:border-white/[0.12] transition-all cursor-pointer">
+              </a>
+              <a href="mailto:support@shadowbasket.app" className="w-8 h-8 rounded-lg border border-white/[0.06] flex items-center justify-center text-muted hover:text-foreground hover:border-white/[0.12] transition-all">
                 <Mail className="w-3.5 h-3.5" />
-              </span>
+              </a>
             </div>
           </div>
 
@@ -64,10 +64,15 @@ export function FooterSection() {
           <div>
             <p className="text-[10px] font-mono text-muted tracking-[0.2em] uppercase font-bold mb-4">Company</p>
             <div className="space-y-2.5">
-              {["About", "Blog", "Careers", "Contact"].map((item) => (
-                <span key={item} className="block text-xs text-muted hover:text-foreground transition-colors cursor-pointer">
-                  {item}
-                </span>
+              {[
+                { label: "About", href: "#features" },
+                { label: "Blog", href: "#how-it-works" },
+                { label: "Careers", href: "#pricing" },
+                { label: "Contact", href: "mailto:support@shadowbasket.app" },
+              ].map((item) => (
+                <a key={item.label} href={item.href} className="block text-xs text-muted hover:text-foreground transition-colors">
+                  {item.label}
+                </a>
               ))}
             </div>
           </div>
@@ -77,9 +82,9 @@ export function FooterSection() {
             <p className="text-[10px] font-mono text-muted tracking-[0.2em] uppercase font-bold mb-4">Legal</p>
             <div className="space-y-2.5">
               {["Privacy Policy", "Terms of Service", "Cookie Policy"].map((item) => (
-                <span key={item} className="block text-xs text-muted hover:text-foreground transition-colors cursor-pointer">
+                <a key={item} href="#" className="block text-xs text-muted hover:text-foreground transition-colors">
                   {item}
-                </span>
+                </a>
               ))}
             </div>
           </div>

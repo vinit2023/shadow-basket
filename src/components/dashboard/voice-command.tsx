@@ -133,56 +133,59 @@ export function VoiceCommand({ items, userId, onItemsChange }: Props) {
   const executeCommand = async (cmd: VoiceCommand) => {
     if (!userId) return;
 
-    switch (cmd.action) {
-      case "add": {
-        await supabase.from("items").insert([{
-          name: cmd.item.charAt(0).toUpperCase() + cmd.item.slice(1),
-          category: cmd.category || "Other",
-          unit_type: cmd.unit || "units",
-          current_stock_level: cmd.quantity || 1,
-          max_stock_level: (cmd.quantity || 1) * 2,
-          daily_burn_rate: 0.5,
-          last_restock_date: new Date().toISOString(),
-          user_id: userId,
-        }]);
-        onItemsChange();
-        break;
-      }
-      case "empty": {
-        const match = items.find((i) => i.name.toLowerCase().includes(cmd.item.toLowerCase()));
-        if (match) {
-          await supabase.from("items").update({ current_stock_level: 0 }).eq("id", match.id);
-          onItemsChange();
-        }
-        break;
-      }
-      case "restock": {
-        const match = items.find((i) => i.name.toLowerCase().includes(cmd.item.toLowerCase()));
-        if (match) {
-          await supabase.from("items").update({
-            current_stock_level: match.max_stock_level,
+    try {
+      switch (cmd.action) {
+        case "add": {
+          await supabase.from("items").insert([{
+            name: cmd.item.charAt(0).toUpperCase() + cmd.item.slice(1),
+            category: cmd.category || "Other",
+            unit_type: cmd.unit || "units",
+            current_stock_level: cmd.quantity || 1,
+            max_stock_level: (cmd.quantity || 1) * 2,
+            daily_burn_rate: 0.5,
             last_restock_date: new Date().toISOString(),
-          }).eq("id", match.id);
+            user_id: userId,
+          }]);
           onItemsChange();
+          break;
         }
-        break;
-      }
-      case "delete": {
-        const match = items.find((i) => i.name.toLowerCase().includes(cmd.item.toLowerCase()));
-        if (match) {
-          await supabase.from("items").delete().eq("id", match.id);
-          onItemsChange();
+        case "empty": {
+          const match = items.find((i) => i.name.toLowerCase().includes(cmd.item.toLowerCase()));
+          if (match) {
+            await supabase.from("items").update({ current_stock_level: 0 }).eq("id", match.id);
+            onItemsChange();
+          }
+          break;
         }
-        break;
-      }
-      case "query": {
-        // Query is handled by the response text — no DB action needed
-        const match = items.find((i) => i.name.toLowerCase().includes(cmd.item.toLowerCase()));
-        if (match && cmd.response) {
-          cmd.response = `You have ${match.current_stock_level} ${match.unit_type} of ${match.name}.`;
+        case "restock": {
+          const match = items.find((i) => i.name.toLowerCase().includes(cmd.item.toLowerCase()));
+          if (match) {
+            await supabase.from("items").update({
+              current_stock_level: match.max_stock_level,
+              last_restock_date: new Date().toISOString(),
+            }).eq("id", match.id);
+            onItemsChange();
+          }
+          break;
         }
-        break;
+        case "delete": {
+          const match = items.find((i) => i.name.toLowerCase().includes(cmd.item.toLowerCase()));
+          if (match) {
+            await supabase.from("items").delete().eq("id", match.id);
+            onItemsChange();
+          }
+          break;
+        }
+        case "query": {
+          const match = items.find((i) => i.name.toLowerCase().includes(cmd.item.toLowerCase()));
+          if (match) {
+            cmd.response = `You have ${match.current_stock_level} ${match.unit_type} of ${match.name}.`;
+          }
+          break;
+        }
       }
+    } catch (err) {
+      console.error("Voice command execution failed:", err);
     }
   };
 

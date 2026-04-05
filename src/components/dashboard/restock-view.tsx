@@ -7,7 +7,9 @@ import {
 } from "@/lib/inventory";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { AlertTriangle, Clock, ShoppingCart, TrendingDown } from "lucide-react";
+import { AlertTriangle, Clock, ShoppingCart, TrendingDown, CheckCircle2 } from "lucide-react";
+import { useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 interface Props {
   items: InventoryItem[];
@@ -114,12 +116,26 @@ function RestockCard({
   item: InventoryItem & { daysLeft: number; pct: number };
   urgent: boolean;
 }) {
+  const [restocked, setRestocked] = useState(false);
+
+  const handleRestock = async () => {
+    try {
+      await supabase.from("items").update({
+        current_stock_level: item.max_stock_level,
+        last_restock_date: new Date().toISOString(),
+      }).eq("id", item.id);
+      setRestocked(true);
+    } catch (err) {
+      console.error("Restock failed:", err);
+    }
+  };
+
   return (
     <motion.div
       whileHover={{ scale: 1.01, y: -2 }}
       className={cn(
         "border rounded-xl p-4 transition-all cursor-default",
-        urgent ? "border-danger/30 bg-danger/5" : "border-warning/30 bg-warning/5"
+        restocked ? "border-success/30 bg-success/5 opacity-60" : urgent ? "border-danger/30 bg-danger/5" : "border-warning/30 bg-warning/5"
       )}
     >
       <div className="flex items-start justify-between">
@@ -129,20 +145,26 @@ function RestockCard({
             {item.category} &middot; {item.current_stock_level} {item.unit_type}
           </p>
         </div>
-        <div className={cn("text-right", urgent ? "text-danger" : "text-warning")}>
-          <p className="text-lg font-mono font-semibold">
-            {item.daysLeft === 0 ? "NOW" : `${item.daysLeft}d`}
-          </p>
-          <p className="text-[10px] font-mono opacity-60">remaining</p>
+        <div className={cn("text-right", restocked ? "text-success" : urgent ? "text-danger" : "text-warning")}>
+          {restocked ? (
+            <p className="text-sm font-semibold flex items-center gap-1"><CheckCircle2 className="w-4 h-4" /> Restocked</p>
+          ) : (
+            <>
+              <p className="text-lg font-mono font-semibold">
+                {item.daysLeft === 0 ? "NOW" : `${item.daysLeft}d`}
+              </p>
+              <p className="text-[10px] font-mono opacity-60">remaining</p>
+            </>
+          )}
         </div>
       </div>
 
       <div className="mt-3 w-full h-1 bg-white/5 rounded-full overflow-hidden">
         <motion.div
           initial={{ width: 0 }}
-          animate={{ width: `${item.pct}%` }}
+          animate={{ width: `${restocked ? 100 : item.pct}%` }}
           transition={{ duration: 0.6 }}
-          className={cn("h-full rounded-full", urgent ? "bg-danger" : "bg-warning")}
+          className={cn("h-full rounded-full", restocked ? "bg-success" : urgent ? "bg-danger" : "bg-warning")}
         />
       </div>
 
@@ -150,10 +172,15 @@ function RestockCard({
         <span className="text-[10px] font-mono text-muted">
           Burn: {item.daily_burn_rate} {item.unit_type}/day
         </span>
-        <button className="flex items-center gap-1 text-[11px] font-medium text-accent hover:text-accent/80 transition-colors">
-          <ShoppingCart className="w-3 h-3" />
-          Add to list
-        </button>
+        {!restocked && (
+          <button
+            onClick={handleRestock}
+            className="flex items-center gap-1 text-[11px] font-medium text-accent hover:text-accent/80 transition-colors"
+          >
+            <ShoppingCart className="w-3 h-3" />
+            Mark Restocked
+          </button>
+        )}
       </div>
     </motion.div>
   );

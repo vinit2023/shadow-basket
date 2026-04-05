@@ -35,6 +35,7 @@ export function DealsView({ items }: Props) {
   const [prices, setPrices] = useState<StoreListing[]>([]);
   const [loadingPrices, setLoadingPrices] = useState(false);
   const [restockedItems, setRestockedItems] = useState<Set<string>>(new Set());
+  const [priceError, setPriceError] = useState(false);
 
   const needsRestock = items
     .map((item) => ({
@@ -49,6 +50,7 @@ export function DealsView({ items }: Props) {
     setSelectedItem(item);
     setLoadingPrices(true);
     setPrices([]);
+    setPriceError(false);
     try {
       const res = await fetch("/api/deal-prices", {
         method: "POST",
@@ -58,23 +60,29 @@ export function DealsView({ items }: Props) {
       const data = await res.json();
       if (data.prices) {
         setPrices(data.prices.sort((a: StoreListing, b: StoreListing) => a.price - b.price));
+      } else {
+        setPriceError(true);
       }
     } catch {
       setPrices([]);
+      setPriceError(true);
     }
     setLoadingPrices(false);
   };
 
   const handleRestocked = async (item: InventoryItem) => {
-    await supabase
-      .from("items")
-      .update({
-        current_stock_level: item.max_stock_level,
-        last_restock_date: new Date().toISOString(),
-      })
-      .eq("id", item.id);
-
-    setRestockedItems((prev) => new Set(prev).add(item.id));
+    try {
+      await supabase
+        .from("items")
+        .update({
+          current_stock_level: item.max_stock_level,
+          last_restock_date: new Date().toISOString(),
+        })
+        .eq("id", item.id);
+      setRestockedItems((prev) => new Set(prev).add(item.id));
+    } catch (err) {
+      console.error("Restock failed:", err);
+    }
   };
 
   const lowestPrice = prices.length > 0 ? prices[0].price : 0;
@@ -164,7 +172,12 @@ export function DealsView({ items }: Props) {
                   <p className="text-[10px] text-muted/50 mt-1">BigBasket · Zepto · Swiggy · Amazon · Flipkart · JioMart</p>
                 </div>
               ) : prices.length === 0 ? (
-                <p className="text-sm text-muted text-center py-8">No prices found. Try again.</p>
+                <div className="text-center py-8">
+                  <p className="text-sm text-muted">{priceError ? "Failed to fetch prices. Please try again." : "No prices found."}</p>
+                  {priceError && (
+                    <button onClick={() => selectedItem && fetchPrices(selectedItem)} className="mt-3 text-xs text-accent hover:text-accent/80 font-medium transition-colors">Retry</button>
+                  )}
+                </div>
               ) : (
                 <div className="space-y-2">
                   {prices.map((listing, i) => {
