@@ -96,19 +96,23 @@ export function VoiceCommand({ items, userId, onItemsChange }: Props) {
         }),
       });
       const data = await res.json();
-      if (!data.command) throw new Error("No command returned");
+      const commands: VoiceCommand[] = data.commands || (data.command ? [data.command] : []);
+      if (commands.length === 0) throw new Error("No command returned");
 
-      const cmd = data.command as VoiceCommand;
-      setCommand(cmd);
+      // Execute all commands
+      for (const cmd of commands) {
+        await executeCommand(cmd);
+      }
 
-      // Execute the command
-      await executeCommand(cmd);
+      // Show the last command (which has the summary response)
+      const lastCmd = commands[commands.length - 1];
+      setCommand(lastCmd);
 
       setState("success");
 
       // Speak the response
-      if (cmd.response && typeof window !== "undefined" && window.speechSynthesis) {
-        const utterance = new SpeechSynthesisUtterance(cmd.response);
+      if (lastCmd.response && typeof window !== "undefined" && window.speechSynthesis) {
+        const utterance = new SpeechSynthesisUtterance(lastCmd.response);
         utterance.rate = 1.1;
         utterance.pitch = 1;
         window.speechSynthesis.speak(utterance);

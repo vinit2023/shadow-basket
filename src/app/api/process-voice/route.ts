@@ -27,23 +27,28 @@ export async function POST(req: NextRequest) {
 
 The user will say things like:
 - "Add milk" or "Add 2 gallons of milk" → add item
-- "I'm out of eggs" or "We finished the butter" → mark item as empty (restock)
+- "Add milk, tea, and rice" → add MULTIPLE items
+- "I'm out of eggs" or "We finished the butter" → mark item as empty
 - "Restock rice" or "I bought bread" → mark item as fully restocked
 - "Remove chicken" or "Delete the yogurt" → delete item
 - "How much milk do I have?" → query item
 
 ${itemList}
 
-Return ONLY a JSON object with these fields:
+IMPORTANT: The user may mention MULTIPLE items in one command. If they do, return a JSON ARRAY of command objects. If only one item, still return an ARRAY with one object.
+
+Each object must have:
 - action: "add" | "empty" | "restock" | "delete" | "query" | "unknown"
 - item: string (the item name, normalized — e.g. "milk" not "some milk")
 - quantity: number | null (if mentioned)
 - unit: string | null (e.g. "gallons", "lbs", "units", "kg", "dozen")
 - category: string | null (one of: Produce, Dairy, Protein, Grains, Beverages, Snacks, Condiments, Frozen, Other — guess based on item)
 - confidence: number (0-1, how confident you are in the parsing)
-- response: string (a short friendly confirmation to speak back, e.g. "Got it! Adding milk to your inventory.")
+- response: string (a short friendly confirmation to speak back)
 
-Return ONLY the JSON object. No markdown.`,
+The LAST object's response should summarize ALL items, e.g. "Done! Added milk, tea, and rice to your inventory."
+
+Return ONLY the JSON array. No markdown. No wrapping object.`,
         },
         {
           role: "user",
@@ -58,7 +63,10 @@ Return ONLY the JSON object. No markdown.`,
     const cleaned = responseText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
     const parsed = JSON.parse(cleaned);
 
-    return NextResponse.json({ command: parsed });
+    // Normalize to always return an array of commands
+    const commands = Array.isArray(parsed) ? parsed : [parsed];
+
+    return NextResponse.json({ commands });
   } catch (error) {
     console.error("Voice processing error:", error);
     return NextResponse.json({ error: "Failed to process voice command" }, { status: 500 });
